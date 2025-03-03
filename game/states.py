@@ -7,6 +7,8 @@ import tcod.console
 import tcod.event
 
 import g
+from game.action_logic import do_action
+from game.actions import Bump
 from game.components import Graphic, Location
 from game.state import State  # noqa: TC001
 from game.tags import IsPlayer
@@ -55,7 +57,7 @@ class InGame:
             case tcod.event.Quit():
                 raise SystemExit
             case tcod.event.KeyDown(sym=sym) if sym in DIR_KEYS:
-                player.components[Location] += DIR_KEYS[sym]
+                do_action(player, Bump(DIR_KEYS[sym]))
 
         return self
 
