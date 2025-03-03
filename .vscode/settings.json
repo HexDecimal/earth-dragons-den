@@ -1,0 +1,30 @@
+{
+    "editor.rulers": [
+        120
+    ],
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "always",
+        "source.organizeImports": "never"
+    },
+    "files.trimFinalNewlines": true,
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "files.associations": {
+        "*.spec": "python",
+    },
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "cSpell.words": [
+        "astextplain",
+        "autoupdate",
+        "docstrings",
+        "mypy",
+        "numpy",
+        "pydocstyle",
+        "scipy",
+        "subclassing",
+        "tcod"
+    ]
+}
