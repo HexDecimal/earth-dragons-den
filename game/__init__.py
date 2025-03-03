@@ -1,0 +1,1 @@
+"""General game source namespace."""

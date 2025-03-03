@@ -20,11 +20,14 @@
         "astextplain",
         "autoupdate",
         "docstrings",
+        "isort",
         "mypy",
         "numpy",
         "pydocstyle",
         "scipy",
         "subclassing",
-        "tcod"
+        "tcod",
+        "tileset",
+        "tilesheet"
     ]
 }
