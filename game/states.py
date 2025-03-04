@@ -9,7 +9,7 @@ import tcod.event
 import g
 from game.action_logic import do_action
 from game.actions import Bump
-from game.components import Graphic, Location
+from game.rendering import render_world
 from game.state import State  # noqa: TC001
 from game.tags import IsPlayer
 
@@ -63,10 +63,4 @@ class InGame:
 
     def on_render(self, console: tcod.console.Console) -> None:
         """State rendering routine."""
-        for entity in g.registry.Q.all_of(components=[Graphic, Location]):
-            entity_pos = entity.components[Location]
-            x = entity_pos.x
-            y = entity_pos.y
-            if 0 <= x < console.width and 0 <= y < console.height:
-                sprite = entity.components[Graphic]
-                console.rgb[["ch", "fg"]][y, x] = sprite.astuple()
+        render_world(g.registry, console)

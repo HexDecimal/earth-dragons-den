@@ -20,6 +20,7 @@
         "astextplain",
         "autoupdate",
         "docstrings",
+        "getnewargs",
         "isort",
         "mypy",
         "numpy",
