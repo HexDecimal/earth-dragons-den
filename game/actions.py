@@ -6,8 +6,8 @@ import attrs
 import tcod.ecs
 
 from game.action import ActionResult, Impossible, Success
-from game.components import Location, Shape, TilesArray
-from game.tile import TileDB
+from game.components import Location, Shape
+from game.travel import check_move, force_move
 
 
 def idle(_actor: tcod.ecs.Entity) -> Success:
@@ -33,14 +33,8 @@ class Bump:
         if not _in_bounds(dest):
             return Impossible("Out of bounds.")
 
-        tiles_db = actor.registry[None].components[TileDB]
-        dest_tile = dest.map.components[TilesArray][dest.ij]
-        if tiles_db.data["move_cost"][dest_tile] != 0:
-            actor.components[Location] = dest
-            return Success()
-        if tiles_db.data["dig_cost"][dest_tile] != 0:
-            dest.map.components[TilesArray][dest.ij] = tiles_db.names[str(tiles_db.data["excavated_tile"][dest_tile])]
-            actor.components[Location] = dest
-            return Success()
-
-        return Impossible("Blocked.")
+        cost = check_move(actor, dest)
+        if cost is None:
+            return Impossible("Blocked.")
+        force_move(actor, dest)
+        return Success()

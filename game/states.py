@@ -5,6 +5,8 @@ from __future__ import annotations
 import attrs
 import tcod.console
 import tcod.event
+import tcod.sdl.video
+from tcod.event import KeySym, Modifier
 
 import g
 from game.action_logic import do_action
@@ -58,6 +60,13 @@ class InGame:
                 raise SystemExit
             case tcod.event.KeyDown(sym=sym) if sym in DIR_KEYS:
                 do_action(player, Bump(DIR_KEYS[sym]))
+            case tcod.event.KeyDown(mod=mod, sym=KeySym.RETURN | KeySym.RETURN2 | KeySym.RETURN) if mod & Modifier.ALT:
+                sdl_window = g.context.sdl_window
+                assert sdl_window
+                if sdl_window.flags & tcod.sdl.video.WindowFlags.MAXIMIZED:
+                    sdl_window.restore()
+                else:
+                    sdl_window.maximize()
 
         return self
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from random import Random
+
 import tcod.ecs
 
 from game.components import Graphic, Location
@@ -12,6 +14,7 @@ from game.tile import Tile, TileDB
 
 def init_world(registry: tcod.ecs.Registry) -> None:
     """Initialize or reinitialize a world."""
+    registry[None].components.setdefault(Random, Random())
     tile_db = registry[None].components.setdefault(TileDB, TileDB())
     tile_db.assign(Tile(name="bedrock", ch=ord("#")))
     tile_db.assign(Tile(name="dirt wall", ch=ord("-"), bg=(0x80, 0, 0), dig_cost=100, excavated_tile="dirt floor"))
