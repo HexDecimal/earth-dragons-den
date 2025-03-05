@@ -11,6 +11,7 @@ from game.components import Graphic, Location, Offset, Vector2
 from game.map_gen import generate_cave_map
 from game.tags import FacetOf, IsPlayer
 from game.tile import Tile, TileDB
+from game.timesys import schedule
 from game.travel import force_move
 
 
@@ -54,5 +55,6 @@ def new_world() -> tcod.ecs.Registry:
     _configure_multi_tile_entity(player, _2x2)
 
     force_move(player, Location(1, 1, map_))
+    schedule(player, 0)
 
     return registry

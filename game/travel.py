@@ -34,13 +34,15 @@ def iter_entity_locations(entity: Entity, position: Location | None = None) -> I
 def check_move(entity: Entity, dest: Location) -> int | None:
     """Return the cost to move to a tile, or None if a tile can not be moved to."""
     tile_db = entity.registry[None].components[TileDB]
-    dest_tile: int = dest.map.components[TilesArray].item(dest.ij)
+    dest_tile = dest.map.components[TilesArray].item(dest.ij)
+    assert isinstance(dest_tile, int)
     costs = []
     for facet_dest in iter_entity_locations(entity, dest):
         if not in_bounds(facet_dest):
             continue
         dest_tile = dest.map.components[TilesArray].item(facet_dest.ij)
-        cost: int = tile_db.data["move_cost"].item(dest_tile) or tile_db.data["dig_cost"].item(dest_tile)
+        cost = tile_db.data["move_cost"].item(dest_tile) or tile_db.data["dig_cost"].item(dest_tile)
+        assert isinstance(cost, int)
         if cost == 0:
             return None
         costs.append(cost)

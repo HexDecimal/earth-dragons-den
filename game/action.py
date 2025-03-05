@@ -20,6 +20,8 @@ class Action(Protocol):
 class Success:
     """Successful action result."""
 
+    time_cost: int = 100
+
 
 @attrs.define
 class Impossible:
