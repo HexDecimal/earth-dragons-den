@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 from tcod.ecs import Entity
 
 from game.components import Location, Offset, Shape, TilesArray
@@ -15,16 +17,26 @@ def in_bounds(pos: Location) -> bool:
     return 0 <= pos.x < shape.width and 0 <= pos.y < shape.height
 
 
+def iter_entity_locations(entity: Entity, position: Location | None = None) -> Iterator[Location]:
+    """Iterate over this entities locations.
+
+    Defaults to the entities actual position, but `position` can be provided manually.
+    """
+    facets = entity.registry.Q.all_of(relations=[(FacetOf, entity)])
+    if position is None:
+        position = entity.components[Location]
+    if not facets:
+        yield position
+        return
+    yield from (position + facet.components[Offset] for facet in facets)
+
+
 def check_move(entity: Entity, dest: Location) -> int | None:
     """Return the cost to move to a tile, or None if a tile can not be moved to."""
     tile_db = entity.registry[None].components[TileDB]
     dest_tile: int = dest.map.components[TilesArray].item(dest.ij)
-    facets = entity.registry.Q.all_of(relations=[(FacetOf, entity)])
-    if not facets:
-        return tile_db.data["move_cost"].item(dest_tile) or tile_db.data["dig_cost"].item(dest_tile) or None
     costs = []
-    for facet in facets:
-        facet_dest = dest + facet.components[Offset]
+    for facet_dest in iter_entity_locations(entity, dest):
         if not in_bounds(facet_dest):
             continue
         dest_tile = dest.map.components[TilesArray].item(facet_dest.ij)

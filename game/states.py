@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import attrs
 import tcod.console
+import tcod.constants
 import tcod.event
 import tcod.sdl.video
 from tcod.event import KeySym, Modifier
@@ -11,6 +12,7 @@ from tcod.event import KeySym, Modifier
 import g
 from game.action_logic import do_action
 from game.actions import Bump
+from game.components import Gold
 from game.rendering import render_world
 from game.state import State  # noqa: TC001
 from game.tags import IsPlayer
@@ -73,3 +75,6 @@ class InGame:
     def on_render(self, console: tcod.console.Console) -> None:
         """State rendering routine."""
         render_world(g.registry, console)
+
+        (player,) = g.registry.Q.all_of(tags=[IsPlayer])
+        console.print(0, 0, f"Gold: {player.components.get(Gold, 0)} ", fg=(255, 255, 255), bg=(0, 0, 0))

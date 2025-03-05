@@ -7,6 +7,7 @@ from typing import Final, NamedTuple, Self
 import attrs
 import numpy as np
 import tcod.ecs
+import tcod.ecs.callbacks
 from numpy.typing import NDArray
 
 
@@ -61,3 +62,17 @@ class Vector2(NamedTuple):
 
 Offset: Final = ("Offset", Vector2)
 """Entity offset from parent position."""
+
+Gold: Final = ("Gold", int)
+"""Gold value."""
+
+
+@tcod.ecs.callbacks.register_component_changed(component=Location)
+def on_position_changed(entity: tcod.ecs.Entity, old: Location | None, new: Location | None) -> None:
+    """Track entity positions as tags."""
+    if old == new:
+        return
+    if old is not None:
+        entity.tags.remove(old)
+    if new is not None:
+        entity.tags.add(new)

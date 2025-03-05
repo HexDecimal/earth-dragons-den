@@ -9,3 +9,6 @@ IsPlayer: Final = "IsPlayer"
 
 FacetOf: Final = "FacetOf"
 """Entity represents a tile of a multi-tile target."""
+
+IsItem: Final = "IsItem"
+"""Entity is a small loose item."""
