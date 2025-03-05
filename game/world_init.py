@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from random import Random
 
 import tcod.ecs
 
-from game.components import Graphic, Location
+from game.components import Graphic, Location, Offset, Vector2
 from game.map_gen import generate_cave_map
-from game.tags import IsPlayer
+from game.tags import FacetOf, IsPlayer
 from game.tile import Tile, TileDB
+from game.travel import force_move
 
 
 def init_world(registry: tcod.ecs.Registry) -> None:
@@ -25,6 +27,18 @@ def init_world(registry: tcod.ecs.Registry) -> None:
     tile_db.assign(Tile(name="rock floor", ch=ord("."), bg=(0x20, 0x20, 0x20), move_cost=100))
 
 
+def _configure_multi_tile_entity(entity: tcod.ecs.Entity, graphic: Iterable[str]) -> None:
+    registry = entity.registry
+    for facet in list(registry.Q.all_of(relations=[(FacetOf, entity)])):
+        facet.clear()
+    for y, row in enumerate(graphic):
+        for x, ch in enumerate(row):
+            facet = registry[object()]
+            facet.components[Offset] = Vector2(x=x, y=y)
+            facet.components[Graphic] = Graphic(ord(ch))
+            facet.relation_tag[FacetOf] = entity
+
+
 def new_world() -> tcod.ecs.Registry:
     """Return a newly created world."""
     registry = tcod.ecs.Registry()
@@ -33,8 +47,12 @@ def new_world() -> tcod.ecs.Registry:
     map_ = generate_cave_map(registry)
 
     player = registry[object()]
-    player.components[Location] = Location(1, 1, map_)
-    player.components[Graphic] = Graphic(ord("@"))
     player.tags |= {IsPlayer}
+
+    _2x2 = ("@┐", "└┘")
+    _3x3 = ("┌─┐", "│@│", "└─┘")
+    _configure_multi_tile_entity(player, _2x2)
+
+    force_move(player, Location(1, 1, map_))
 
     return registry

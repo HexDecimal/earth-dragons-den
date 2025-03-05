@@ -50,3 +50,14 @@ class Shape(NamedTuple):
 
 TilesArray: Final = ("TileArray", NDArray[np.uint8])
 """Array of tile indexes."""
+
+
+class Vector2(NamedTuple):
+    """Generic X,Y vector."""
+
+    x: int
+    y: int
+
+
+Offset: Final = ("Offset", Vector2)
+"""Entity offset from parent position."""

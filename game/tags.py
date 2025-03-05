@@ -6,3 +6,6 @@ from typing import Final
 
 IsPlayer: Final = "IsPlayer"
 """Entity is the player character."""
+
+FacetOf: Final = "FacetOf"
+"""Entity represents a tile of a multi-tile target."""
