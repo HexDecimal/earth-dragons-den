@@ -16,7 +16,7 @@ from game.components import Gold
 from game.rendering import render_world
 from game.room import RoomType
 from game.state import State  # noqa: TC001
-from game.tags import IsPlayer
+from game.tags import InStorage, IsPlayer
 from game.timesys import Tick
 
 WAIT_KEYS = (
@@ -85,3 +85,10 @@ class InGame:
         (player,) = g.registry.Q.all_of(tags=[IsPlayer])
         console.print(0, 0, f"Gold: {player.components.get(Gold, 0)} ", fg=(255, 255, 255), bg=(0, 0, 0))
         console.print(0, 1, f"Tick: {g.registry[None].components.get(Tick, 0)} ", fg=(255, 255, 255), bg=(0, 0, 0))
+        console.print(
+            0,
+            2,
+            f"Gold store: {sum(e.components[Gold] for e in g.registry.Q.all_of(components=[Gold], tags=[InStorage]))} ",
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
