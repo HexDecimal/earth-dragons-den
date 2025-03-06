@@ -29,6 +29,7 @@
         "subclassing",
         "tcod",
         "tileset",
-        "tilesheet"
+        "tilesheet",
+        "timesys"
     ]
 }

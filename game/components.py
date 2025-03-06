@@ -10,6 +10,8 @@ import tcod.ecs
 import tcod.ecs.callbacks
 from numpy.typing import NDArray
 
+from game.action import Action
+
 
 @attrs.define(frozen=True)
 class Graphic:
@@ -76,3 +78,6 @@ def on_position_changed(entity: tcod.ecs.Entity, old: Location | None, new: Loca
         entity.tags.remove(old)
     if new is not None:
         entity.tags.add(new)
+
+
+AI: Final = ("AI", Action)

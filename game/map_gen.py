@@ -4,12 +4,30 @@ from __future__ import annotations
 
 from random import Random
 
+import attrs
 import numpy as np
 import tcod.ecs
 
-from game.components import Gold, Graphic, Location, Shape, TilesArray
+from game.actions import walk_random
+from game.components import AI, Gold, Graphic, Location, Shape, TilesArray
 from game.tags import IsItem
 from game.tile import TileDB
+from game.timesys import schedule
+
+
+@attrs.define
+class Rect:
+    """Generic rectangle."""
+
+    x: int
+    y: int
+    width: int
+    height: int
+
+    @property
+    def inner(self) -> tuple[slice, slice]:
+        """Return inner area slice."""
+        return slice(self.y, self.y + self.height), slice(self.x, self.x + self.width)
 
 
 def generate_cave_map(registry: tcod.ecs.Registry) -> tcod.ecs.Entity:
@@ -25,18 +43,26 @@ def generate_cave_map(registry: tcod.ecs.Registry) -> tcod.ecs.Entity:
         for x in range(0, 128, 16):
             width = rng.randint(4, 14)
             height = rng.randint(4, 14)
-            left = x + rng.randint(1, 16 - width - 1)
-            top = y + rng.randint(1, 16 - height - 1)
-            tiles[top : top + height, left : left + width] = tile_db.names["rock floor"]
+            rect = Rect(x + rng.randint(1, 16 - width - 1), y + rng.randint(1, 16 - height - 1), width, height)
+            tiles[rect.inner] = tile_db.names["rock floor"]
             for _ in range(2):
                 obj = registry[object()]
                 obj.components[Graphic] = Graphic(ord("$"))
                 obj.components[Location] = Location(
-                    x=rng.randint(left, left + width - 1),
-                    y=rng.randint(top, top + height - 1),
+                    x=rng.randint(rect.x, rect.x + rect.width - 1),
+                    y=rng.randint(rect.y, rect.y + rect.height - 1),
                     map=map_,
                 )
                 obj.components[Gold] = rng.randint(10, 50)
                 obj.tags.add(IsItem)
+            obj = registry[object()]
+            obj.components[Graphic] = Graphic(ord("k"))
+            obj.components[Location] = Location(
+                x=rng.randint(rect.x, rect.x + rect.width - 1),
+                y=rng.randint(rect.y, rect.y + rect.height - 1),
+                map=map_,
+            )
+            obj.components[AI] = walk_random
+            schedule(obj, 0)
 
     return map_

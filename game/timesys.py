@@ -29,7 +29,8 @@ def schedule(entity: tcod.ecs.Entity, interval: int) -> Ticket:
         uid=registry[None].components.setdefault(NextTicketUID, 0),
         entity=entity,
     )
-    heapq.heappush(registry[None].components.setdefault(TurnQueue, []), ticket)
+    queue = registry[None].components.setdefault(TurnQueue, [])
+    heapq.heappush(queue, ticket)
     registry[None].components[NextTicketUID] += 1
     return ticket
 

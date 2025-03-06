@@ -7,6 +7,7 @@ from random import Random
 
 import tcod.ecs
 
+from game.action_logic import simulate
 from game.components import Graphic, Location, Offset, Vector2
 from game.map_gen import generate_cave_map
 from game.tags import FacetOf, IsPlayer
@@ -47,7 +48,7 @@ def new_world() -> tcod.ecs.Registry:
 
     map_ = generate_cave_map(registry)
 
-    player = registry[object()]
+    player = registry["player"]
     player.tags |= {IsPlayer}
 
     _2x2 = ("@┐", "└┘")
@@ -56,5 +57,7 @@ def new_world() -> tcod.ecs.Registry:
 
     force_move(player, Location(1, 1, map_))
     schedule(player, 0)
+
+    simulate(registry)
 
     return registry

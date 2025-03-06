@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from random import Random
+
 import attrs
 import tcod.ecs
 
@@ -38,3 +40,21 @@ class Bump:
                 actor.components[Gold] += item.components[Gold]
                 item.clear()
         return Success()
+
+
+def walk_random(actor: tcod.ecs.Entity) -> ActionResult:
+    """Walk in a random direction."""
+    rng = actor.registry[None].components[Random]
+    dir_ = rng.choice(
+        [
+            (-1, 0),
+            (1, 0),
+            (0, -1),
+            (0, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+            (1, 1),
+        ]
+    )
+    return Bump(dir_)(actor)
