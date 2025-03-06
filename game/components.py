@@ -54,6 +54,9 @@ class Shape(NamedTuple):
 TilesLayer: Final = ("TilesLayer", NDArray[np.uint8])
 """Array of tile indexes."""
 
+RoomTypeLayer: Final = ("RoomTypeLayer", NDArray[np.uint8])
+"""Array of room type indexes."""
+
 
 class Vector2(NamedTuple):
     """Generic X,Y vector."""

@@ -17,6 +17,7 @@
         "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "cSpell.words": [
+        "argwhere",
         "astextplain",
         "autoupdate",
         "docstrings",
@@ -24,6 +25,8 @@
         "isort",
         "mypy",
         "numpy",
+        "pathfinding",
+        "popleft",
         "pydocstyle",
         "scipy",
         "subclassing",

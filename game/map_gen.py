@@ -8,8 +8,8 @@ import attrs
 import numpy as np
 import tcod.ecs
 
-from game.actions import walk_random
-from game.components import AI, Gold, Graphic, Location, Shape, TilesLayer
+from game.actions import GatherTreasureAI
+from game.components import AI, Gold, Graphic, Location, RoomTypeLayer, Shape, TilesLayer
 from game.tags import IsItem
 from game.tile import TileDB
 from game.timesys import schedule
@@ -37,6 +37,7 @@ def generate_cave_map(registry: tcod.ecs.Registry) -> tcod.ecs.Entity:
     map_ = registry[object()]
     map_.components[Shape] = shape = Shape(128, 128)
     map_.components[TilesLayer] = tiles = np.zeros(shape, dtype=np.uint8)
+    map_.components[RoomTypeLayer] = np.zeros(shape, dtype=np.uint8)
     tiles[:] = tile_db.names["bedrock"]
     tiles[1:-1, 1:-1] = tile_db.names["rock wall"]
     for y in range(0, 128, 16):
@@ -62,7 +63,7 @@ def generate_cave_map(registry: tcod.ecs.Registry) -> tcod.ecs.Entity:
                 y=rng.randint(rect.y, rect.y + rect.height - 1),
                 map=map_,
             )
-            obj.components[AI] = walk_random
+            obj.components[AI] = GatherTreasureAI()
             schedule(obj, 0)
 
     return map_

@@ -11,9 +11,10 @@ from tcod.event import KeySym, Modifier
 
 import g
 from game.action_logic import do_action
-from game.actions import Bump
+from game.actions import Bump, StampRoom, idle
 from game.components import Gold
 from game.rendering import render_world
+from game.room import RoomType
 from game.state import State  # noqa: TC001
 from game.tags import IsPlayer
 from game.timesys import Tick
@@ -63,6 +64,8 @@ class InGame:
                 raise SystemExit
             case tcod.event.KeyDown(sym=sym) if sym in DIR_KEYS:
                 do_action(player, Bump(DIR_KEYS[sym]))
+            case tcod.event.KeyDown(sym=sym) if sym in WAIT_KEYS:
+                do_action(player, idle)
             case tcod.event.KeyDown(mod=mod, sym=KeySym.RETURN | KeySym.RETURN2 | KeySym.RETURN) if mod & Modifier.ALT:
                 sdl_window = g.context.sdl_window
                 assert sdl_window
@@ -70,6 +73,8 @@ class InGame:
                     sdl_window.restore()
                 else:
                     sdl_window.maximize()
+            case tcod.event.KeyDown(sym=KeySym.t):
+                do_action(player, StampRoom(RoomType.Treasury))
 
         return self
 

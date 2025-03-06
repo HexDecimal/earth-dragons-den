@@ -13,13 +13,16 @@ def do_action(actor: tcod.ecs.Entity, action: Action) -> None:
     """Apply an action and its side effects."""
     ticket = next_ticket(actor.registry)
     assert ticket.entity is actor
-    match action(actor):
+    result = action(actor)
+    match result:
         case Success(time_cost=time_cost):
             schedule(actor, time_cost)
         case Impossible(msg=msg):
             if AI in actor.components:
                 schedule(actor, 100)
             print(msg)
+        case _:
+            raise AssertionError(result)
 
     if ticket.entity.components.get(AI) is None:
         simulate(actor.registry)

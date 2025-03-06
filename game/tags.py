@@ -12,3 +12,6 @@ FacetOf: Final = "FacetOf"
 
 IsItem: Final = "IsItem"
 """Entity is a small loose item."""
+
+InStorage: Final = "InStorage"
+"""Entity is in a stockpile."""
