@@ -14,6 +14,7 @@ class Ticket(NamedTuple):
     time: int
     uid: int
     entity: tcod.ecs.Entity
+    start_time: int
 
 
 Tick: Final = ("Tick", int)
@@ -28,6 +29,7 @@ def schedule(entity: tcod.ecs.Entity, interval: int) -> Ticket:
         time=registry[None].components.setdefault(Tick, 0) + interval,
         uid=registry[None].components.setdefault(NextTicketUID, 0),
         entity=entity,
+        start_time=registry[None].components[Tick],
     )
     queue = registry[None].components.setdefault(TurnQueue, [])
     heapq.heappush(queue, ticket)
