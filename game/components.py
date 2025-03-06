@@ -51,7 +51,7 @@ class Shape(NamedTuple):
     width: int
 
 
-TilesArray: Final = ("TileArray", NDArray[np.uint8])
+TilesLayer: Final = ("TilesLayer", NDArray[np.uint8])
 """Array of tile indexes."""
 
 

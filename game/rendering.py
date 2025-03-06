@@ -6,7 +6,7 @@ import tcod.camera
 import tcod.console
 import tcod.ecs
 
-from game.components import Graphic, Location, Shape, TilesArray
+from game.components import Graphic, Location, Shape, TilesLayer
 from game.tags import IsPlayer
 from game.tile import TileDB
 
@@ -23,7 +23,7 @@ def render_world(registry: tcod.ecs.Registry, console: tcod.console.Console) -> 
     screen_slice, world_slice = tcod.camera.get_slices(
         (console.height, console.width), map_.components[Shape], (camera_y, camera_x)
     )
-    console.rgb[screen_slice] = tile_db.data[["ch", "fg", "bg"]][map_.components[TilesArray][world_slice]]
+    console.rgb[screen_slice] = tile_db.data[["ch", "fg", "bg"]][map_.components[TilesLayer][world_slice]]
 
     for entity in registry.Q.all_of(components=[Graphic, Location]):
         entity_pos = entity.components[Location]

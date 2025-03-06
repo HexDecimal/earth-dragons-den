@@ -6,7 +6,7 @@ from collections.abc import Iterator
 
 from tcod.ecs import Entity
 
-from game.components import Location, Offset, Shape, TilesArray
+from game.components import Location, Offset, Shape, TilesLayer
 from game.tags import FacetOf
 from game.tile import TileDB
 
@@ -34,13 +34,13 @@ def iter_entity_locations(entity: Entity, position: Location | None = None) -> I
 def check_move(entity: Entity, dest: Location) -> int | None:
     """Return the cost to move to a tile, or None if a tile can not be moved to."""
     tile_db = entity.registry[None].components[TileDB]
-    dest_tile = dest.map.components[TilesArray].item(dest.ij)
+    dest_tile = dest.map.components[TilesLayer].item(dest.ij)
     assert isinstance(dest_tile, int)
     costs = []
     for facet_dest in iter_entity_locations(entity, dest):
         if not in_bounds(facet_dest):
             continue
-        dest_tile = dest.map.components[TilesArray].item(facet_dest.ij)
+        dest_tile = dest.map.components[TilesLayer].item(facet_dest.ij)
         cost = tile_db.data["move_cost"].item(dest_tile) or tile_db.data["dig_cost"].item(dest_tile)
         assert isinstance(cost, int)
         if cost == 0:
@@ -54,9 +54,9 @@ def _touch_tile(dest: Location) -> None:
     if not in_bounds(dest):
         return
     tile_db = dest.map.registry[None].components[TileDB]
-    dest_tile = dest.map.components[TilesArray][dest.ij]
+    dest_tile = dest.map.components[TilesLayer][dest.ij]
     if tile_db.data["dig_cost"][dest_tile]:
-        dest.map.components[TilesArray][dest.ij] = tile_db.names[str(tile_db.data["excavated_tile"][dest_tile])]
+        dest.map.components[TilesLayer][dest.ij] = tile_db.names[str(tile_db.data["excavated_tile"][dest_tile])]
 
 
 def force_move(entity: Entity, dest: Location) -> None:
