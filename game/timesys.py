@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import heapq
+import logging
 from typing import Final, NamedTuple
 
 import tcod.ecs
+
+logger = logging.getLogger(__name__)
 
 
 class Ticket(NamedTuple):
@@ -35,6 +38,14 @@ def schedule(entity: tcod.ecs.Entity, interval: int) -> Ticket:
     heapq.heappush(queue, ticket)
     registry[None].components[NextTicketUID] += 1
     return ticket
+
+
+def unschedule(ticket: Ticket) -> None:
+    """Remove a scheduled ticket from the from of the queue."""
+    queue = ticket.entity.registry[None].components[TurnQueue]
+    assert ticket is queue[0]
+    heapq.heappop(queue)
+    logger.debug("unscheduled: %s", ticket)
 
 
 def next_ticket(registry: tcod.ecs.Registry) -> Ticket:

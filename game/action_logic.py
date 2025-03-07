@@ -8,7 +8,7 @@ import tcod.ecs
 
 from game.action import Action, Impossible, Success
 from game.components import AI
-from game.timesys import next_ticket, schedule
+from game.timesys import Ticket, TurnQueue, next_ticket, schedule, unschedule
 
 logger = logging.getLogger(__name__)
 
@@ -16,15 +16,20 @@ logger = logging.getLogger(__name__)
 def do_action(actor: tcod.ecs.Entity, action: Action) -> None:
     """Apply an action and its side effects."""
     ticket = next_ticket(actor.registry)
-    assert ticket.entity is actor
+    assert ticket.entity is actor, sorted(actor.registry[None].components[TurnQueue])
     result = action(actor)
     match result:
         case Success(time_cost=time_cost):
-            schedule(actor, time_cost)
+            if Ticket in actor.components:
+                schedule(actor, time_cost)
+            else:
+                unschedule(ticket)
         case Impossible(msg=msg):
-            if AI in actor.components:
+            if Ticket in actor.components and AI in actor.components:
                 schedule(actor, 100)
-            logger.info("Impossible action: %s", msg)
+            else:
+                unschedule(ticket)
+            logger.debug("Impossible action: %s", msg)
         case _:
             raise AssertionError(result)
 

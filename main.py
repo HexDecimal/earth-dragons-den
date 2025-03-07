@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import tcod.context
 import tcod.event
 import tcod.sdl.video
@@ -44,4 +46,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    if __debug__:
+        logging.basicConfig(level=logging.INFO)
     main()

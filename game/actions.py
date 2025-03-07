@@ -13,7 +13,7 @@ import tcod.path
 from numpy.typing import NDArray
 
 from game.action import Action, ActionResult, Impossible, Success
-from game.components import Gold, Location, RoomTypeLayer, TilesLayer
+from game.components import Gold, Location, RoomTypeLayer, Shape, TilesLayer
 from game.room import RoomType
 from game.tags import InStorage, IsItem
 from game.tile import TileDB
@@ -181,3 +181,30 @@ class RallyToEntity:
             return self.sub_action(actor)
 
         return walk_random(actor)
+
+
+@attrs.define()
+class ExitMap:
+    """Exit the map."""
+
+    sub_action: Action | None = None
+
+    def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
+        """Move to edge of map and escape."""
+        actor_pos = actor.components[Location]
+        map_ = actor_pos.map
+        height, width = map_.components[Shape]
+        if actor_pos.x == 0 or actor_pos.y == 0 or actor_pos.x == width - 1 or actor_pos.y == height - 1:
+            actor.clear()
+            return Success()
+
+        tile_db = actor.registry[None].components[TileDB]
+
+        edge = tile_db.data["move_cost"][map_.components[TilesLayer]] != 0
+        edge[1:-1, 1:-1] = False
+        pf = tcod.path.Pathfinder(_get_graph(actor))
+        for i, j in np.argwhere(edge):
+            pf.add_root((i, j))
+
+        self.sub_action = FollowPath.from_ij_array(pf.path_from(actor.components[Location].ij)[1:])
+        return self.sub_action(actor)

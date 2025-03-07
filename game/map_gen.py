@@ -8,7 +8,7 @@ import attrs
 import numpy as np
 import tcod.ecs
 
-from game.actions import GatherTreasureAI
+from game.actions import ExitMap
 from game.components import AI, Gold, Location, RoomTypeLayer, Shape, TilesLayer
 from game.tile import TileDB
 from game.timesys import schedule
@@ -60,7 +60,7 @@ def generate_cave_map(registry: tcod.ecs.Registry) -> tcod.ecs.Entity:
                 y=rng.randint(rect.y, rect.y + rect.height - 1),
                 map=map_,
             )
-            obj.components[AI] = GatherTreasureAI()
+            obj.components[AI] = ExitMap()
             schedule(obj, 0)
 
     return map_
