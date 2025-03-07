@@ -19,6 +19,7 @@ def main() -> None:
     g.registry = new_world()
     g.state = InGame()
     tileset = tcod.tileset.load_tilesheet("assets/terminal8x12_gs_ro.png", 16, 16, tcod.tileset.CHARMAP_CP437)
+    tcod.tileset.procedural_block_elements(tileset=tileset)
     with tcod.context.new(tileset=tileset, width=1280, height=720) as g.context:
         while True:
             console = g.context.new_console(40, 20)

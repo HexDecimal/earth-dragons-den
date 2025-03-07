@@ -60,10 +60,12 @@ def new_world() -> tcod.ecs.Registry:
     player.tags |= {IsPlayer}
 
     _2x2 = ("@┐", "└┘")
+    _2x2b = ("@▜", "▙▟")
     _3x3 = ("┌─┐", "│@│", "└─┘")
-    _configure_multi_tile_entity(player, _2x2)
+    _3x3b = ("▛▀▜", "▌@▐", "▙▄▟")
+    _configure_multi_tile_entity(player, _3x3)
 
-    force_move(player, Location(1, 1, map_))
+    force_move(player, Location(1, 32, map_))
     schedule(player, 0)
 
     simulate(registry)
