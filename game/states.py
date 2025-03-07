@@ -32,7 +32,7 @@ class InGame:
         (player,) = g.registry.Q.all_of(tags=[IsPlayer])
         match event:
             case tcod.event.KeyDown(sym=sym) if sym in DIR_KEYS:
-                do_action(player, Bump(DIR_KEYS[sym]))
+                do_action(player, Bump(DIR_KEYS[sym], allow_dig=True))
             case tcod.event.KeyDown(sym=sym) if sym in WAIT_KEYS:
                 do_action(player, idle)
             case tcod.event.KeyDown(sym=KeySym.t):

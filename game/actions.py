@@ -30,6 +30,7 @@ class Bump:
     """Generic bump action."""
 
     dir: tuple[int, int]
+    allow_dig: bool
 
     def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
         """Bump interaction."""
@@ -37,7 +38,7 @@ class Bump:
         if not in_bounds(dest):
             return Impossible("Out of bounds.")
 
-        cost = check_move(actor, dest)
+        cost = check_move(actor, dest, allow_dig=self.allow_dig)
         if cost is None:
             return Impossible("Blocked.")
         force_move(actor, dest)
@@ -76,7 +77,7 @@ def walk_random(actor: tcod.ecs.Entity) -> ActionResult:
             (1, 1),
         ]
     )
-    return Bump(dir_)(actor)
+    return Bump(dir_, allow_dig=False)(actor)
 
 
 @attrs.define
@@ -110,7 +111,7 @@ class FollowPath:
             return Impossible("End of path reached.")
         dest_x, dest_y = self.path[0]
         actor_pos = actor.components[Location]
-        result = Bump((dest_x - actor_pos.x, dest_y - actor_pos.y))(actor)
+        result = Bump((dest_x - actor_pos.x, dest_y - actor_pos.y), allow_dig=True)(actor)
         if isinstance(result, Success):
             self.path.popleft()
         return result
