@@ -14,6 +14,7 @@ from game.action_logic import do_action
 from game.actions import Bump, StampRoom, idle
 from game.components import Gold
 from game.constants import DIR_KEYS, WAIT_KEYS
+from game.menu import Menu  # noqa: TC001
 from game.menus import main_menu
 from game.rendering import render_world
 from game.room import RoomType
@@ -37,7 +38,7 @@ class InGame:
             case tcod.event.KeyDown(sym=KeySym.t):
                 do_action(player, StampRoom(RoomType.Treasury))
             case tcod.event.KeyDown(sym=KeySym.ESCAPE):
-                return main_menu(self)
+                return MenuState(self, main_menu(self))
 
         return self
 
@@ -55,3 +56,40 @@ class InGame:
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
+
+
+@attrs.define()
+class MenuState:
+    """Modal menu state."""
+
+    parent: State | None
+    menu: Menu
+
+    def on_event(self, event: tcod.event.Event) -> State:
+        """Handle menu events."""
+        match event:
+            case tcod.event.KeyDown(sym=sym) if sym in DIR_KEYS:
+                _x, y = DIR_KEYS[sym]
+                self.menu.selected += y
+                self.menu.selected %= len(self.menu.items)
+            case tcod.event.KeyDown(sym=KeySym.RETURN | KeySym.RETURN2 | KeySym.KP_ENTER):
+                return self.menu.items[self.menu.selected].callback()
+            case (
+                tcod.event.KeyDown(sym=KeySym.ESCAPE) | tcod.event.MouseButtonDown(button=tcod.event.MouseButton.RIGHT)
+            ):
+                if self.parent is not None:
+                    return self.parent
+        return self
+
+    def on_render(self, console: tcod.console.Console) -> None:
+        """Render the menu."""
+        if g.state is self and self.parent is not None:
+            self.parent.on_render(console)
+            console.rgb["fg"] //= 8
+            console.rgb["bg"] //= 8
+
+        for i, item in enumerate(self.menu.items):
+            fg = (0xFF, 0xFF, 0xFF) if i == self.menu.selected else (0x80, 0x80, 0x80)
+            bg = (0x20, 0x20, 0x20) if i == self.menu.selected else None
+
+            console.print(0, i, item.label, fg=fg, bg=bg)

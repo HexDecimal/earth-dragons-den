@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import logging
+
 import tcod.ecs
 
 from game.action import Action, Impossible, Success
 from game.components import AI
 from game.timesys import next_ticket, schedule
+
+logger = logging.getLogger(__name__)
 
 
 def do_action(actor: tcod.ecs.Entity, action: Action) -> None:
@@ -20,7 +24,7 @@ def do_action(actor: tcod.ecs.Entity, action: Action) -> None:
         case Impossible(msg=msg):
             if AI in actor.components:
                 schedule(actor, 100)
-            print(msg)
+            logger.info("Impossible action: %s", msg)
         case _:
             raise AssertionError(result)
 
