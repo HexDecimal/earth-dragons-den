@@ -39,8 +39,9 @@ def generate_cave_map(registry: tcod.ecs.Registry) -> tcod.ecs.Entity:
     map_.components[RoomTypeLayer] = np.zeros(shape, dtype=np.uint8)
     tiles[:] = tile_db.names["bedrock"]
     tiles[1:-1, 1:-1] = tile_db.names["rock wall"]
+    tiles[:, :16] = tile_db.names["grass"]
     for y in range(0, 128, 16):
-        for x in range(0, 128, 16):
+        for x in range(16, 128, 16):
             width = rng.randint(4, 14)
             height = rng.randint(4, 14)
             rect = Rect(x + rng.randint(1, 16 - width - 1), y + rng.randint(1, 16 - height - 1), width, height)

@@ -27,6 +27,7 @@ def init_world(registry: tcod.ecs.Registry) -> None:
         Tile(name="rock wall", ch=ord("="), bg=(0x40, 0x40, 0x40), dig_cost=400, excavated_tile="rock floor")
     )
     tile_db.assign(Tile(name="rock floor", ch=ord("."), bg=(0x20, 0x20, 0x20), move_cost=100))
+    tile_db.assign(Tile(name="grass", ch=ord("."), fg=(0x0, 0x80, 0x0), bg=(0x00, 0x20, 0x00), move_cost=100))
 
     gold = registry["gold"]
     gold.components[Graphic] = Graphic(ord("$"))
