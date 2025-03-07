@@ -160,3 +160,23 @@ class GatherTreasureAI:
                 return self.sub_action(actor)
 
         return walk_random(actor)
+
+
+@attrs.define()
+class RallyToEntity:
+    """Rally to a target entity."""
+
+    target: tcod.ecs.Entity
+
+    sub_action: Action | None = None
+
+    def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
+        """Move adjacent to the target."""
+        pf = tcod.path.Pathfinder(_get_graph(actor))
+        for pos in iter_entity_locations(self.target):
+            pf.add_root(pos.ij)
+        self.sub_action = FollowPath.from_ij_array(pf.path_from(actor.components[Location].ij)[1:-1])
+        if self.sub_action:
+            return self.sub_action(actor)
+
+        return walk_random(actor)
