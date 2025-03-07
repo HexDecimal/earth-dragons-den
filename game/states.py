@@ -39,6 +39,8 @@ class InGame:
                 do_action(player, StampRoom(RoomType.Treasury))
             case tcod.event.KeyDown(sym=KeySym.ESCAPE):
                 return MenuState(self, main_menu(self))
+            case tcod.event.KeyDown(sym=KeySym.SPACE):
+                return GodMode()
 
         return self
 
@@ -56,6 +58,38 @@ class InGame:
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
+
+    def on_update(self) -> bool:
+        """Do nothing."""
+        return False
+
+
+@attrs.define()
+class GodMode:
+    """Omniscient top-down view."""
+
+    paused: bool = False
+
+    def on_event(self, event: tcod.event.Event) -> State:
+        """State event handler."""
+        match event:
+            case tcod.event.KeyDown(sym=KeySym.ESCAPE):
+                return MenuState(self, main_menu(self))
+            case tcod.event.KeyDown(sym=KeySym.SPACE):
+                return InGame()
+        return self
+
+    def on_update(self) -> bool:
+        """Auto advance time."""
+        if not self.paused:
+            (player,) = g.registry.Q.all_of(tags=[IsPlayer])
+            do_action(player, idle)
+            return True
+        return False
+
+    def on_render(self, console: tcod.console.Console) -> None:
+        """Same rendering as InGame."""
+        InGame().on_render(console)
 
 
 @attrs.define()
@@ -83,7 +117,7 @@ class MenuState:
 
     def on_render(self, console: tcod.console.Console) -> None:
         """Render the menu."""
-        if g.state is self and self.parent is not None:
+        if g.state == self and self.parent is not None:
             self.parent.on_render(console)
             console.rgb["fg"] //= 8
             console.rgb["bg"] //= 8
@@ -93,3 +127,7 @@ class MenuState:
             bg = (0x20, 0x20, 0x20) if i == self.menu.selected else None
 
             console.print(0, i, item.label, fg=fg, bg=bg)
+
+    def on_update(self) -> bool:
+        """Do nothing."""
+        return False

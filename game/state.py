@@ -18,3 +18,7 @@ class State(Protocol):
     def on_render(self, console: tcod.console.Console, /) -> None:
         """State rendering routine."""
         ...
+
+    def on_update(self) -> bool:
+        """Every frame/update."""
+        ...

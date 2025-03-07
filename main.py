@@ -24,7 +24,8 @@ def main() -> None:
             console = g.context.new_console(40, 20)
             g.state.on_render(console)
             g.context.present(console, keep_aspect=False, integer_scaling=True)
-            for event in tcod.event.wait():
+            g.state.on_update()
+            for event in tcod.event.get():
                 match event:
                     case tcod.event.Quit():
                         raise SystemExit
