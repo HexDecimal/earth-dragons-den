@@ -10,7 +10,7 @@ import tcod.ecs
 from game.action_logic import simulate
 from game.components import Graphic, Location, Offset, Vector2
 from game.map_gen import generate_cave_map
-from game.tags import FacetOf, IsPlayer
+from game.tags import FacetOf, IsItem, IsPlayer
 from game.tile import Tile, TileDB
 from game.timesys import schedule
 from game.travel import force_move
@@ -27,6 +27,13 @@ def init_world(registry: tcod.ecs.Registry) -> None:
         Tile(name="rock wall", ch=ord("="), bg=(0x40, 0x40, 0x40), dig_cost=400, excavated_tile="rock floor")
     )
     tile_db.assign(Tile(name="rock floor", ch=ord("."), bg=(0x20, 0x20, 0x20), move_cost=100))
+
+    gold = registry["gold"]
+    gold.components[Graphic] = Graphic(ord("$"))
+    gold.tags.add(IsItem)
+
+    kobold = registry["kobold"]
+    kobold.components[Graphic] = Graphic(ord("k"))
 
 
 def _configure_multi_tile_entity(entity: tcod.ecs.Entity, graphic: Iterable[str]) -> None:

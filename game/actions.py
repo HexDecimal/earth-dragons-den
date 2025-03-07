@@ -13,7 +13,7 @@ import tcod.path
 from numpy.typing import NDArray
 
 from game.action import Action, ActionResult, Impossible, Success
-from game.components import Gold, Graphic, Location, RoomTypeLayer, TilesLayer
+from game.components import Gold, Location, RoomTypeLayer, TilesLayer
 from game.room import RoomType
 from game.tags import InStorage, IsItem
 from game.tile import TileDB
@@ -52,12 +52,10 @@ class Bump:
                 and map_room_types[pos.ij] == RoomType.Treasury
                 and not actor.registry.Q.all_of(components=[Gold], tags=[pos, InStorage])
             ):
-                obj = actor.registry[object()]
-                obj.components[Graphic] = Graphic(ord("$"))
+                obj = actor.registry["gold"].instantiate()
                 obj.components[Location] = pos
                 obj.components[Gold] = actor.components[Gold]
                 actor.components[Gold] = 0
-                obj.tags.add(IsItem)
                 obj.tags.add(InStorage)
 
         return Success()
