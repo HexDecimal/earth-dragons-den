@@ -7,74 +7,37 @@ import tcod.console
 import tcod.constants
 import tcod.event
 import tcod.sdl.video
-from tcod.event import KeySym, Modifier
+from tcod.event import KeySym
 
 import g
 from game.action_logic import do_action
 from game.actions import Bump, StampRoom, idle
 from game.components import Gold
+from game.constants import DIR_KEYS, WAIT_KEYS
+from game.menus import main_menu
 from game.rendering import render_world
 from game.room import RoomType
 from game.state import State  # noqa: TC001
 from game.tags import InStorage, IsPlayer
 from game.timesys import Tick
 
-WAIT_KEYS = (
-    tcod.event.KeySym.COMMA,
-    tcod.event.KeySym.KP_5,
-    tcod.event.KeySym.CLEAR,
-)
-DIR_KEYS = {
-    tcod.event.KeySym.LEFT: (-1, 0),
-    tcod.event.KeySym.RIGHT: (1, 0),
-    tcod.event.KeySym.UP: (0, -1),
-    tcod.event.KeySym.DOWN: (0, 1),
-    tcod.event.KeySym.HOME: (-1, -1),
-    tcod.event.KeySym.END: (-1, 1),
-    tcod.event.KeySym.PAGEUP: (1, -1),
-    tcod.event.KeySym.PAGEDOWN: (1, 1),
-    tcod.event.KeySym.KP_4: (-1, 0),
-    tcod.event.KeySym.KP_6: (1, 0),
-    tcod.event.KeySym.KP_8: (0, -1),
-    tcod.event.KeySym.KP_2: (0, 1),
-    tcod.event.KeySym.KP_7: (-1, -1),
-    tcod.event.KeySym.KP_1: (-1, 1),
-    tcod.event.KeySym.KP_9: (1, -1),
-    tcod.event.KeySym.KP_3: (1, 1),
-    tcod.event.KeySym.h: (-1, 0),
-    tcod.event.KeySym.l: (1, 0),
-    tcod.event.KeySym.k: (0, -1),
-    tcod.event.KeySym.j: (0, 1),
-    tcod.event.KeySym.y: (-1, -1),
-    tcod.event.KeySym.b: (-1, 1),
-    tcod.event.KeySym.u: (1, -1),
-    tcod.event.KeySym.n: (1, 1),
-}
-
 
 @attrs.define()
 class InGame:
-    """State protocol."""
+    """Player in control state."""
 
     def on_event(self, event: tcod.event.Event) -> State:
         """State event handler."""
         (player,) = g.registry.Q.all_of(tags=[IsPlayer])
         match event:
-            case tcod.event.Quit():
-                raise SystemExit
             case tcod.event.KeyDown(sym=sym) if sym in DIR_KEYS:
                 do_action(player, Bump(DIR_KEYS[sym]))
             case tcod.event.KeyDown(sym=sym) if sym in WAIT_KEYS:
                 do_action(player, idle)
-            case tcod.event.KeyDown(mod=mod, sym=KeySym.RETURN | KeySym.RETURN2 | KeySym.RETURN) if mod & Modifier.ALT:
-                sdl_window = g.context.sdl_window
-                assert sdl_window
-                if sdl_window.flags & tcod.sdl.video.WindowFlags.MAXIMIZED:
-                    sdl_window.restore()
-                else:
-                    sdl_window.maximize()
             case tcod.event.KeyDown(sym=KeySym.t):
                 do_action(player, StampRoom(RoomType.Treasury))
+            case tcod.event.KeyDown(sym=KeySym.ESCAPE):
+                return main_menu(self)
 
         return self
 
