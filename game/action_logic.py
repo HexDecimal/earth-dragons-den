@@ -25,7 +25,9 @@ def do_action(actor: tcod.ecs.Entity, action: Action) -> None:
             else:
                 unschedule(ticket)
         case Impossible(msg=msg):
-            if Ticket in actor.components and AI in actor.components:
+            if AI not in actor.components:
+                pass  # Don't skip player turn for impossible result
+            elif Ticket in actor.components:
                 schedule(actor, 100)
             else:
                 unschedule(ticket)
