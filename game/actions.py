@@ -13,7 +13,10 @@ import tcod.path
 from numpy.typing import NDArray
 
 from game.action import Action, ActionResult, Impossible, Success
+from game.actor_logic import actor_at
+from game.combat import attack_obj
 from game.components import Gold, Location, RoomTypeLayer, Shape, TilesLayer
+from game.faction import Faction, is_enemy
 from game.room import RoomType
 from game.tags import InStorage, IsItem
 from game.tile import TileDB
@@ -37,6 +40,14 @@ class Bump:
         dest = actor.components[Location] + self.dir
         if not in_bounds(dest):
             return Impossible("Out of bounds.")
+
+        for dest_pos in iter_entity_locations(actor, dest):
+            for target in actor_at(dest_pos):
+                if target is actor:
+                    continue
+                if not is_enemy(actor, target):
+                    continue
+                return attack_obj(actor, target)
 
         cost = check_move(actor, dest, allow_dig=self.allow_dig)
         if cost is None:
@@ -112,7 +123,8 @@ class FollowPath:
         dest_x, dest_y = self.path[0]
         actor_pos = actor.components[Location]
         result = Bump((dest_x - actor_pos.x, dest_y - actor_pos.y), allow_dig=True)(actor)
-        if isinstance(result, Success):
+        actor_pos = actor.components[Location]
+        if isinstance(result, Success) and actor_pos.x == dest_x and actor_pos.y == dest_y:
             self.path.popleft()
         return result
 
@@ -206,5 +218,26 @@ class ExitMap:
         for i, j in np.argwhere(edge):
             pf.add_root((i, j))
 
+        self.sub_action = FollowPath.from_ij_array(pf.path_from(actor.components[Location].ij)[1:])
+        return self.sub_action(actor)
+
+
+@attrs.define()
+class HostileAI:
+    """Attack factions."""
+
+    sub_action: Action | None = None
+    last_target: tcod.ecs.Entity | None = None
+
+    def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
+        """Seek and attack targets."""
+        if self.sub_action:
+            return self.sub_action(actor)
+        targets = actor.registry.Q.all_of(components=[Location], tags=[Faction.Player])
+        if not targets:
+            return Impossible("no targets")
+        pf = tcod.path.Pathfinder(_get_graph(actor))
+        for t in targets:
+            pf.add_root(t.components[Location].ij)
         self.sub_action = FollowPath.from_ij_array(pf.path_from(actor.components[Location].ij)[1:])
         return self.sub_action(actor)

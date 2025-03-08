@@ -11,7 +11,7 @@ from game.action_logic import simulate
 from game.components import Graphic, Location, Offset, Vector2
 from game.faction import Faction
 from game.map_gen import generate_cave_map
-from game.tags import FacetOf, IsItem, IsPlayer
+from game.tags import FacetOf, IsActor, IsItem, IsPlayer
 from game.tile import Tile, TileDB
 from game.timesys import schedule
 from game.travel import force_move
@@ -64,7 +64,7 @@ def new_world() -> tcod.ecs.Registry:
     map_ = generate_cave_map(registry)
 
     player = registry["player"]
-    player.tags |= {IsPlayer, Faction.Player}
+    player.tags |= {IsPlayer, Faction.Player, IsActor}
 
     _2x2 = ("@┐", "└┘")
     _2x2b = ("@▜", "▙▟")

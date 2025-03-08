@@ -43,6 +43,10 @@ class Location:
         """Return the ij coordinates of this location."""
         return self.y, self.x
 
+    def squared_distance(self, other: Location) -> int:
+        """Return Euclidean distance squared between self and other."""
+        return (self.x - other.x) * 2 + (self.y - other.y) * 2
+
 
 class Shape(NamedTuple):
     """Shape of a map component."""

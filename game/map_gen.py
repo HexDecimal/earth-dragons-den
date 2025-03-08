@@ -8,7 +8,7 @@ import attrs
 import numpy as np
 import tcod.ecs
 
-from game.actions import ExitMap
+from game.actions import HostileAI
 from game.actor_logic import spawn_actor
 from game.components import Gold, Location, RoomTypeLayer, Shape, TilesLayer
 from game.faction import Faction
@@ -61,10 +61,10 @@ def generate_cave_map(registry: tcod.ecs.Registry) -> tcod.ecs.Entity:
                 obj.components[Location] = rect.get_random_pos(map_)
                 obj.components[Gold] = rng.randint(10, 50)
             spawn_actor(
-                registry["kobold"],
+                registry["orc"],
                 pos=rect.get_random_pos(map_),
-                ai=ExitMap(),
-                faction=Faction.Player,
+                ai=HostileAI(),
+                faction=Faction.Hostile,
             )
 
     return map_

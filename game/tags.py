@@ -15,3 +15,6 @@ IsItem: Final = "IsItem"
 
 InStorage: Final = "InStorage"
 """Entity is in a stockpile."""
+
+IsActor: Final = "IsActor"
+"""Entity is a living character."""
