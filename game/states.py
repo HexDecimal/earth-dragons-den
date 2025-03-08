@@ -24,7 +24,16 @@ from game.timesys import Tick
 
 
 @attrs.define()
-class InGame:
+class ModalState:
+    """State with no real-time action."""
+
+    def on_update(self) -> bool:
+        """Do nothing."""
+        return False
+
+
+@attrs.define()
+class InGame(ModalState):
     """Player in control state."""
 
     def on_event(self, event: tcod.event.Event) -> State:
@@ -59,10 +68,6 @@ class InGame:
             bg=(0, 0, 0),
         )
 
-    def on_update(self) -> bool:
-        """Do nothing."""
-        return False
-
 
 @attrs.define()
 class GodMode:
@@ -93,7 +98,7 @@ class GodMode:
 
 
 @attrs.define()
-class MenuState:
+class MenuState(ModalState):
     """Modal menu state."""
 
     parent: State | None
@@ -127,7 +132,3 @@ class MenuState:
             bg = (0x20, 0x20, 0x20) if i == self.menu.selected else None
 
             console.print(0, i, item.label, fg=fg, bg=bg)
-
-    def on_update(self) -> bool:
-        """Do nothing."""
-        return False
