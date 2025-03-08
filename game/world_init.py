@@ -8,6 +8,8 @@ from random import Random
 import tcod.ecs
 
 from game.action_logic import simulate
+from game.actions import HostileAI
+from game.actor_logic import spawn_actor
 from game.components import Graphic, Location, Offset, Vector2
 from game.faction import Faction
 from game.map_gen import generate_cave_map
@@ -74,6 +76,9 @@ def new_world() -> tcod.ecs.Registry:
 
     force_move(player, Location(1, 32, map_))
     schedule(player, 0)
+
+    for p in [Location(1, 29, map_), Location(1, 30, map_), Location(2, 29, map_), Location(2, 30, map_)]:
+        spawn_actor(registry["kobold"], pos=p, ai=HostileAI(), faction=Faction.Player)
 
     simulate(registry)
 

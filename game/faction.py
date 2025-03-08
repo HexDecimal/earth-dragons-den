@@ -19,3 +19,10 @@ def is_enemy(actor: tcod.ecs.Entity, target: tcod.ecs.Entity) -> bool:
     my_factions = set(Faction).intersection(actor.tags)
     target_factions = set(Faction).intersection(target.tags)
     return my_factions != target_factions
+
+
+def get_enemy_factions(actor: tcod.ecs.Entity) -> set[Faction]:
+    """Return the enemy factions of this actor."""
+    factions = set(Faction)
+    factions.difference_update(actor.tags)
+    return factions
