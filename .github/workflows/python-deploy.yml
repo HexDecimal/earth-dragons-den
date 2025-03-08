@@ -1,0 +1,123 @@
+name: Deploy
+
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  python-version: "3.13"
+  pyinstaller-version: "6.12.0"
+  project-name: earth-dragons-den-7drl
+  archive-name: # Is set dynamically
+
+jobs:
+  package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform-name: windows.x64
+            architecture: x64
+          - os: macos-latest
+            platform-name: macos.arm64
+          - os: ubuntu-latest
+            platform-name: linux.x64
+    steps:
+      - name: Checkout code
+        # fetch-depth=0 and v1 are needed for 'git describe' to work correctly
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1000
+          lfs: true
+      - name: Set archive name
+        run: |
+          ARCHIVE_NAME=${{ env.project-name }}-`git describe --tags --always`-${{ matrix.platform-name }}
+          echo "Archive name set to: $ARCHIVE_NAME"
+          echo "archive-name=$ARCHIVE_NAME" >> $GITHUB_ENV
+      - name: Set up Python ${{ env.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          architecture: ${{ matrix.architecture }}
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install PyInstaller==${{ env.pyinstaller-version }} -r requirements.txt
+      - name: Run PyInstaller
+        env:
+          PYTHONHASHSEED: 0 # Try to ensure deterministic results
+        run: |
+          pyinstaller build.spec
+      # This step exists for debugging.  Such as checking if data files were included correctly by PyInstaller
+      - name: List distribution files
+        run: |
+          find dist
+      # Archive the PyInstaller build using the appropriate tool for the platform
+      - name: Tar files
+        if: runner.os != 'Windows'
+        working-directory: ./dist
+        run: |
+          tar --format=ustar -czvf "../${{ env.archive-name }}.tar.gz" */
+      - name: Archive files
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive dist/*/ ${{ env.archive-name }}.zip
+      # Upload archives as artifacts, these can be downloaded from the GitHub actions page
+      - name: "Upload Artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.platform-name }}
+          path: ${{ env.archive-name }}.*
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: error
+      # If a tag is pushed then a new archives are uploaded to GitHub Releases automatically
+      - name: Upload release
+        if: github.ref_type == 'tag'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ env.archive-name }}.*
+          file_glob: true
+          tag: ${{ github.ref }}
+          overwrite: true
+  butler:
+    needs: [package]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/release'
+    environment:
+      name: itch.io
+      url: https://hexdecimal.itch.io/earth-dragons-den
+    strategy:
+      matrix:
+        platform-name: [windows.x64, macos.arm64, linux.x64]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-${{ matrix.platform-name }}
+      - name: Unzip Archive
+        if: matrix.platform-name == 'windows.x64'
+        run: unzip ${{ env.project-name }}*.zip -d dist/
+      - name: Untar Archive
+        if: matrix.platform-name != 'windows.x64'
+        run: |
+          mkdir dist
+          tar --extract --gzip --file *.tar.gz --directory=dist/ --verbose
+      - name: Install Butler
+        run: |
+          mkdir ~/bin
+          cd ~/bin
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          chmod +x butler
+          echo "~/bin" >> $GITHUB_PATH
+          ~/bin/butler -V
+      - name: Upload to Itch
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: butler push dist/*/ hexdecimal/${{ env.project-name }}:${{ matrix.platform-name }}-latest
