@@ -9,9 +9,10 @@ import numpy as np
 import tcod.ecs
 
 from game.actions import ExitMap
-from game.components import AI, Gold, Location, RoomTypeLayer, Shape, TilesLayer
+from game.actor_logic import spawn_actor
+from game.components import Gold, Location, RoomTypeLayer, Shape, TilesLayer
+from game.faction import Faction
 from game.tile import TileDB
-from game.timesys import schedule
 
 
 @attrs.define
@@ -27,6 +28,15 @@ class Rect:
     def inner(self) -> tuple[slice, slice]:
         """Return inner area slice."""
         return slice(self.y, self.y + self.height), slice(self.x, self.x + self.width)
+
+    def get_random_pos(self, map_: tcod.ecs.Entity) -> Location:
+        """Return a random location within this rect."""
+        rng = map_.registry[None].components[Random]
+        return Location(
+            x=rng.randint(self.x, self.x + self.width - 1),
+            y=rng.randint(self.y, self.y + self.height - 1),
+            map=map_,
+        )
 
 
 def generate_cave_map(registry: tcod.ecs.Registry) -> tcod.ecs.Entity:
@@ -48,19 +58,13 @@ def generate_cave_map(registry: tcod.ecs.Registry) -> tcod.ecs.Entity:
             tiles[rect.inner] = tile_db.names["rock floor"]
             for _ in range(2):
                 obj = registry["gold"].instantiate()
-                obj.components[Location] = Location(
-                    x=rng.randint(rect.x, rect.x + rect.width - 1),
-                    y=rng.randint(rect.y, rect.y + rect.height - 1),
-                    map=map_,
-                )
+                obj.components[Location] = rect.get_random_pos(map_)
                 obj.components[Gold] = rng.randint(10, 50)
-            obj = registry["kobold"].instantiate()
-            obj.components[Location] = Location(
-                x=rng.randint(rect.x, rect.x + rect.width - 1),
-                y=rng.randint(rect.y, rect.y + rect.height - 1),
-                map=map_,
+            spawn_actor(
+                registry["kobold"],
+                pos=rect.get_random_pos(map_),
+                ai=ExitMap(),
+                faction=Faction.Player,
             )
-            obj.components[AI] = ExitMap()
-            schedule(obj, 0)
 
     return map_

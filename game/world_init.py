@@ -9,6 +9,7 @@ import tcod.ecs
 
 from game.action_logic import simulate
 from game.components import Graphic, Location, Offset, Vector2
+from game.faction import Faction
 from game.map_gen import generate_cave_map
 from game.tags import FacetOf, IsItem, IsPlayer
 from game.tile import Tile, TileDB
@@ -36,6 +37,12 @@ def init_world(registry: tcod.ecs.Registry) -> None:
     kobold = registry["kobold"]
     kobold.components[Graphic] = Graphic(ord("k"))
 
+    orc = registry["orc"]
+    orc.components[Graphic] = Graphic(ord("o"))
+
+    human = registry["human"]
+    human.components[Graphic] = Graphic(ord("U"))
+
 
 def _configure_multi_tile_entity(entity: tcod.ecs.Entity, graphic: Iterable[str]) -> None:
     registry = entity.registry
@@ -57,7 +64,7 @@ def new_world() -> tcod.ecs.Registry:
     map_ = generate_cave_map(registry)
 
     player = registry["player"]
-    player.tags |= {IsPlayer}
+    player.tags |= {IsPlayer, Faction.Player}
 
     _2x2 = ("@┐", "└┘")
     _2x2b = ("@▜", "▙▟")
