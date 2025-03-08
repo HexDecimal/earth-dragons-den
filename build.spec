@@ -14,7 +14,7 @@ a = Analysis(  # type: ignore[name-defined]
     runtime_hooks=[],
     excludes=[],
     noarchive=False,
-    optimize=2,
+    optimize=1,
 )
 pyz = PYZ(a.pure)  # type: ignore[name-defined]
 
