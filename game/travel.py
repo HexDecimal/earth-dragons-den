@@ -31,7 +31,7 @@ def iter_entity_locations(entity: Entity, position: Location | None = None) -> I
     yield from (position + facet.components[Offset] for facet in facets)
 
 
-def check_move(entity: Entity, dest: Location, *, allow_dig: bool) -> int | None:
+def check_move(entity: Entity, dest: Location, *, allow_dig: bool) -> int | None:  # noqa: C901
     """Return the cost to move to a tile, or None if a tile can not be moved to."""
     tile_db = entity.registry[None].components[TileDB]
     dest_tile = dest.map.components[TilesLayer].item(dest.ij)
@@ -45,18 +45,21 @@ def check_move(entity: Entity, dest: Location, *, allow_dig: bool) -> int | None
         assert isinstance(cost, int)
         if cost == 0:
             return None  # Tile is solid
-        for e in entity.registry.Q.all_of(tags=[facet_dest, IsActor]):
-            if e is entity:
-                continue  # No self collision
-            if e.components[Location] == dest:
-                return None  # Space occupied by actor
-        for e in entity.registry.Q.all_of(
-            tags=[facet_dest], relations=[(FacetOf, entity.registry.Q.all_of(tags=[IsActor]))]
-        ):
-            if e.relation_tag[FacetOf] is entity:
-                continue  # No self collision
-            if e.components[Location] == dest:
-                return None  # Space occupied by multi-tile actor
+        is_multi_tile = bool(entity.registry.Q.all_of(relations=[(FacetOf, entity)]))
+        if not is_multi_tile:
+            for e in entity.registry.Q.all_of(tags=[facet_dest, IsActor]):
+                if e is entity:
+                    continue  # No self collision
+                if e.components[Location] == dest:
+                    return None  # Space occupied by actor
+        else:
+            for e in entity.registry.Q.all_of(
+                tags=[facet_dest], relations=[(FacetOf, entity.registry.Q.all_of(tags=[IsActor]))]
+            ):
+                if e.relation_tag[FacetOf] is entity:
+                    continue  # No self collision
+                if e.components[Location] == dest:
+                    return None  # Space occupied by multi-tile actor
         costs.append(cost)
 
     return max(costs)
