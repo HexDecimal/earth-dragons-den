@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
+
 import tcod.camera
 import tcod.console
 import tcod.ecs
 
 from game.components import Graphic, Location, RoomTypeLayer, Shape, TilesLayer
-from game.tags import IsPlayer
+from game.tags import FacetOf, IsActor, IsItem, IsPlayer
 from game.tile import TileDB
 
 
@@ -29,10 +31,20 @@ def render_world(registry: tcod.ecs.Registry, console: tcod.console.Console) -> 
         (0x40, 0x40, 0x40),
     )
 
+    to_display = defaultdict[tuple[int, int], list[tuple[int, tcod.ecs.Entity]]](list)
+
     for entity in registry.Q.all_of(components=[Graphic, Location]):
         entity_pos = entity.components[Location]
         x = entity_pos.x - camera_x
         y = entity_pos.y - camera_y
         if 0 <= x < console.width and 0 <= y < console.height:
-            sprite = entity.components[Graphic]
-            console.rgb[["ch", "fg"]][y, x] = sprite.astuple()
+            order = 0
+            if FacetOf in entity.relation_tag:
+                order = 3
+            elif IsActor in entity.tags:
+                order = 2
+            elif IsItem in entity.tags:
+                order = 1
+            to_display[(y, x)].append((order, entity))
+    for yx, sprites in to_display.items():
+        console.rgb[["ch", "fg"]][yx] = max(sprites, key=lambda it: it[0])[1].components[Graphic].astuple()
