@@ -110,7 +110,7 @@ class MenuState(ModalState):
     """Modal menu state."""
 
     parent: State | None
-    menu: Menu[Callable[[], State]]
+    menu: Menu[Callable[[], State | None]]
 
     def on_event(self, event: tcod.event.Event) -> State:
         """Handle menu events."""
@@ -120,7 +120,7 @@ class MenuState(ModalState):
                 self.menu.selected += y
                 self.menu.selected %= len(self.menu.items)
             case tcod.event.KeyDown(sym=KeySym.RETURN | KeySym.RETURN2 | KeySym.KP_ENTER):
-                return self.menu.items[self.menu.selected].value()
+                return self.menu.items[self.menu.selected].value() or self
             case tcod.event.KeyDown(sym=KeySym.ESCAPE) | tcod.event.MouseButtonUp(button=tcod.event.MouseButton.RIGHT):
                 if self.parent is not None:
                     return self.parent

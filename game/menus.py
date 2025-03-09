@@ -12,19 +12,19 @@ from game.state import State  # noqa: TC001
 from game.world_init import new_world
 
 
-def new_game() -> State:
+def new_game() -> State | None:
     """Start a new game."""
     g.registry = new_world()
     simulate(g.registry)
     return game.states.InGame()
 
 
-def save_and_quit() -> State:
+def save_and_quit() -> State | None:
     """Raise system exit."""
     raise SystemExit
 
 
-def main_menu(parent: State | None) -> Menu[Callable[[], State]]:
+def main_menu(parent: State | None) -> Menu[Callable[[], State | None]]:
     """Return the main menu state."""
     items = [MenuItem("New Game", new_game), MenuItem("Save and Quit", save_and_quit)]
     if parent is not None:
