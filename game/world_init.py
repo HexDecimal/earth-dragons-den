@@ -7,7 +7,7 @@ from random import Random
 
 import tcod.ecs
 
-from game.actions import HostileAI
+from game.actions import MinionAI
 from game.actor_logic import spawn_actor
 from game.components import HP, Graphic, Location, MaxHP, Offset, Str, Vector2
 from game.faction import Faction
@@ -88,6 +88,6 @@ def new_world() -> tcod.ecs.Registry:
     schedule(player, 0)
 
     for p in [Location(1, 29, map_), Location(1, 30, map_), Location(2, 29, map_), Location(2, 30, map_)]:
-        spawn_actor(registry["kobold"], pos=p, ai=HostileAI(), faction=Faction.Player)
+        spawn_actor(registry["kobold"], pos=p, ai=MinionAI(), faction=Faction.Player)
 
     return registry

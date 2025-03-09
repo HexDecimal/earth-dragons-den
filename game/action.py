@@ -29,5 +29,9 @@ class Impossible:
 
     msg: str
 
+    def __bool__(self) -> bool:
+        """Falsy instance."""
+        return False
+
 
 ActionResult = Success | Impossible

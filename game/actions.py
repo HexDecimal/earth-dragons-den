@@ -246,7 +246,6 @@ class HostileAI:
     """Attack factions."""
 
     sub_action: Action | None = None
-    last_target: tcod.ecs.Entity | None = None
 
     def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
         """Seek and attack targets."""
@@ -270,4 +269,28 @@ class HostileAI:
             self.sub_action = FollowPath.path_to_best(actor, valid_targets_pos)
         if self.sub_action:
             return self.sub_action(actor)
-        return idle(actor)  # Wait for targets.
+        return Impossible("no targets")  # Wait for targets.
+
+
+@attrs.define()
+class MinionAI:
+    """General minion AI."""
+
+    sub_action: Action | None = None
+
+    def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
+        """Defer to the most appropriate action."""
+        action: Action = HostileAI()
+        if result := action(actor):
+            self.sub_action = action
+            return result
+
+        action = GatherTreasureAI()
+        if result := action(actor):
+            self.sub_action = action
+            return result
+
+        if self.sub_action:
+            return self.sub_action(actor)
+
+        return Impossible("nothing to do")

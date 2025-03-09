@@ -15,7 +15,7 @@ from tcod.event import KeySym
 
 import g
 from game.action_logic import do_action, simulate
-from game.actions import Bump, HostileAI, StampRoom, idle
+from game.actions import Bump, MinionAI, StampRoom, idle
 from game.actor_logic import spawn_actor
 from game.components import Gold, Location, Name
 from game.constants import DIR_KEYS, LABEL_COLOR, LABEL_SELECTED, WAIT_KEYS
@@ -44,7 +44,7 @@ class ModalState:
 
 def _cast(_: None) -> State:
     (player,) = g.registry.Q.all_of(tags=[IsPlayer])
-    spawn_actor(player.registry["kobold"], player.components[Location], HostileAI(), Faction.Player)
+    spawn_actor(player.registry["kobold"], player.components[Location], MinionAI(), Faction.Player)
     return InGame()
 
 
