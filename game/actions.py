@@ -21,7 +21,7 @@ from game.faction import get_enemy_factions, is_enemy
 from game.room import RoomType
 from game.tags import FacetOf, InStorage, IsActor, IsItem
 from game.tile import TileDB
-from game.travel import check_move, force_move, in_bounds, iter_entity_locations
+from game.travel import check_move, force_move, in_bounds, is_multi_tile, iter_entity_locations
 
 
 def idle(_actor: tcod.ecs.Entity) -> Success:
@@ -156,7 +156,18 @@ def _get_graph(actor: tcod.ecs.Entity) -> tcod.path.SimpleGraph:
     """Return the pathfinding graph for an actor."""
     map_ = actor.components[Location].map
     tile_db = actor.registry[None].components[TileDB]
-    return tcod.path.SimpleGraph(cost=tile_db.data["move_cost"][map_.components[TilesLayer]], cardinal=2, diagonal=3)
+    cost = tile_db.data["move_cost"][map_.components[TilesLayer]]
+    if not is_multi_tile(actor):
+        for e in actor.registry.Q.all_of(components=[Location], tags=[IsActor]).none_of(
+            relations=[(..., FacetOf, None)]
+        ):
+            cost[e.components[Location].ij] += 10
+    else:
+        for e in actor.registry.Q.all_of(components=[Location]).none_of(
+            relations=[(FacetOf, actor.registry.Q.all_of(tags=[IsActor]))]
+        ):
+            cost[e.components[Location].ij] += 10
+    return tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
 
 
 @attrs.define

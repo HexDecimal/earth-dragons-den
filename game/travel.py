@@ -31,12 +31,18 @@ def iter_entity_locations(entity: Entity, position: Location | None = None) -> I
     yield from (position + facet.components[Offset] for facet in facets)
 
 
+def is_multi_tile(entity: Entity) -> bool:
+    """Entity is multi-tile."""
+    return bool(entity.registry.Q.all_of(relations=[(FacetOf, entity)]))
+
+
 def check_move(entity: Entity, dest: Location, *, allow_dig: bool) -> int | None:  # noqa: C901
     """Return the cost to move to a tile, or None if a tile can not be moved to."""
     tile_db = entity.registry[None].components[TileDB]
     dest_tile = dest.map.components[TilesLayer].item(dest.ij)
     assert isinstance(dest_tile, int)
     costs = []
+    _is_multi_tile = is_multi_tile(entity)
     for facet_dest in iter_entity_locations(entity, dest):
         if not in_bounds(facet_dest):
             continue
@@ -45,8 +51,8 @@ def check_move(entity: Entity, dest: Location, *, allow_dig: bool) -> int | None
         assert isinstance(cost, int)
         if cost == 0:
             return None  # Tile is solid
-        is_multi_tile = bool(entity.registry.Q.all_of(relations=[(FacetOf, entity)]))
-        if not is_multi_tile:
+
+        if not _is_multi_tile:
             for e in entity.registry.Q.all_of(tags=[facet_dest, IsActor]):
                 if e is entity:
                     continue  # No self collision
