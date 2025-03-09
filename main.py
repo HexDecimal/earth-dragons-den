@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import logging
 import traceback
+from datetime import UTC, datetime
 from pathlib import Path
 
+import imageio
 import tcod.context
 import tcod.event
 import tcod.sdl.video
@@ -35,9 +37,9 @@ def main() -> None:
         g.state = InGame()
     else:
         g.state = SiteSelect.new(None)
-    tileset = tcod.tileset.load_tilesheet(FONT, 16, 16, tcod.tileset.CHARMAP_CP437)
-    tcod.tileset.procedural_block_elements(tileset=tileset)
-    with tcod.context.new(tileset=tileset, width=1280, height=720) as g.context:
+    g.tileset = tcod.tileset.load_tilesheet(FONT, 16, 16, tcod.tileset.CHARMAP_CP437)
+    tcod.tileset.procedural_block_elements(tileset=g.tileset)
+    with tcod.context.new(tileset=g.tileset, width=1280, height=720) as g.context:
         try:
             main_loop()
         except Exception:
@@ -68,6 +70,11 @@ def main_loop() -> None:
                         sdl_window.restore()
                     else:
                         sdl_window.maximize()
+                case tcod.event.KeyDown(sym=KeySym.PRINTSCREEN):
+                    base_path = Path("screenshots")
+                    base_path.mkdir(exist_ok=True)
+                    path = base_path / f"earth-dragons-den-{datetime.now(tz=UTC).isoformat()}.png".replace(":", "-")
+                    imageio.imsave(path, g.tileset.render(console))
                 case _:
                     g.state = g.state.on_event(event)
 

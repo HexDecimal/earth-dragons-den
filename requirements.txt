@@ -4,3 +4,4 @@ tcod~=16.2
 tcod-ecs
 tcod-camera
 attrs>=25.1.0
+imageio

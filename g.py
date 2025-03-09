@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import tcod.context
 import tcod.ecs
+import tcod.tileset
 
 from game.state import State  # noqa: TC001
 
@@ -15,3 +16,6 @@ registry: tcod.ecs.Registry
 
 state: State
 """Active game state."""
+
+tileset: tcod.tileset.Tileset
+"""Active tileset."""
