@@ -126,6 +126,8 @@ class FollowPath:
         actor_pos = actor.components[Location]
         if isinstance(result, Success) and actor_pos.x == dest_x and actor_pos.y == dest_y:
             self.path.popleft()
+        if isinstance(result, Impossible):
+            self.path.clear()
         return result
 
     def __bool__(self) -> bool:

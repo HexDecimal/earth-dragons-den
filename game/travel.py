@@ -7,7 +7,7 @@ from collections.abc import Iterator
 from tcod.ecs import Entity
 
 from game.components import Location, Offset, Shape, TilesLayer
-from game.tags import FacetOf
+from game.tags import FacetOf, IsActor
 from game.tile import TileDB
 
 
@@ -44,8 +44,21 @@ def check_move(entity: Entity, dest: Location, *, allow_dig: bool) -> int | None
         cost = tile_db.data["move_cost"].item(dest_tile) or (allow_dig and tile_db.data["dig_cost"].item(dest_tile))
         assert isinstance(cost, int)
         if cost == 0:
-            return None
+            return None  # Tile is solid
+        for e in entity.registry.Q.all_of(tags=[facet_dest, IsActor]):
+            if e is entity:
+                continue  # No self collision
+            if e.components[Location] == dest:
+                return None  # Space occupied by actor
+        for e in entity.registry.Q.all_of(
+            tags=[facet_dest], relations=[(FacetOf, entity.registry.Q.all_of(tags=[IsActor]))]
+        ):
+            if e.relation_tag[FacetOf] is entity:
+                continue  # No self collision
+            if e.components[Location] == dest:
+                return None  # Space occupied by multi-tile actor
         costs.append(cost)
+
     return max(costs)
 
 
