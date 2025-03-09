@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Iterable
 from random import Random
 from typing import Self
 
@@ -13,12 +14,12 @@ import tcod.path
 from numpy.typing import NDArray
 
 from game.action import Action, ActionResult, Impossible, Success
-from game.actor_logic import actor_at
+from game.actor_logic import actor_at, get_fov
 from game.combat import attack_obj
 from game.components import Gold, Location, RoomTypeLayer, Shape, TilesLayer
 from game.faction import get_enemy_factions, is_enemy
 from game.room import RoomType
-from game.tags import InStorage, IsActor, IsItem
+from game.tags import FacetOf, InStorage, IsActor, IsItem
 from game.tile import TileDB
 from game.travel import check_move, force_move, in_bounds, iter_entity_locations
 
@@ -115,6 +116,22 @@ class FollowPath:
     def from_ij_array(cls, array: NDArray[np.integer]) -> Self:
         """Initialize path from Numpy array."""
         return cls(deque((yx.item(1), yx.item(0)) for yx in array))
+
+    @classmethod
+    def path_to_best(cls, actor: tcod.ecs.Entity, positions: Iterable[Location]) -> Self:
+        """Initialize path to the best position of an iterable."""
+        pf = tcod.path.Pathfinder(_get_graph(actor))
+        for pos in positions:
+            pf.add_root(pos.ij)
+
+        return cls.from_ij_array(pf.path_from(actor.components[Location].ij)[1:])
+
+    @classmethod
+    def path_to(cls, actor: tcod.ecs.Entity, target: Location | tcod.ecs.Entity) -> Self:
+        """Initialize path to a position or actor."""
+        if isinstance(target, Location):
+            return cls.path_to_best(actor, [target])
+        return cls.path_to_best(actor, iter_entity_locations(target))
 
     def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
         """Take one step on path."""
@@ -233,13 +250,24 @@ class HostileAI:
 
     def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
         """Seek and attack targets."""
+        visible = get_fov(actor)
+        targets = (
+            actor.registry.Q.all_of(components=[Location], tags=[IsActor])
+            .any_of(tags=get_enemy_factions(actor))
+            .get_entities()
+            | actor.registry.Q.all_of(
+                components=[Location],
+                relations=[(FacetOf, actor.registry.Q.all_of(tags=[IsActor]).any_of(tags=get_enemy_factions(actor)))],
+            ).get_entities()
+        )
+        valid_targets_pos = []
+        for target in targets:
+            target_pos = target.components[Location]
+            if not visible[target_pos.ij]:
+                continue
+            valid_targets_pos.append(target_pos)
+        if valid_targets_pos:
+            self.sub_action = FollowPath.path_to_best(actor, valid_targets_pos)
         if self.sub_action:
             return self.sub_action(actor)
-        targets = actor.registry.Q.all_of(components=[Location], tags=[IsActor]).any_of(tags=get_enemy_factions(actor))
-        if not targets:
-            return Impossible("no targets")
-        pf = tcod.path.Pathfinder(_get_graph(actor))
-        for t in targets:
-            pf.add_root(t.components[Location].ij)
-        self.sub_action = FollowPath.from_ij_array(pf.path_from(actor.components[Location].ij)[1:])
-        return self.sub_action(actor)
+        return idle(actor)  # Wait for targets.

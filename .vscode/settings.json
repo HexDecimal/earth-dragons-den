@@ -29,6 +29,7 @@
         "popleft",
         "pydocstyle",
         "scipy",
+        "SHADOWCAST",
         "subclassing",
         "tcod",
         "tileset",

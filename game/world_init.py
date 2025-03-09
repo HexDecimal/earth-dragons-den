@@ -25,12 +25,14 @@ def init_world(registry: tcod.ecs.Registry) -> None:
     tile_db = registry[None].components.setdefault(TileDB, TileDB())
     tile_db.assign(Tile(name="bedrock", ch=ord("#")))
     tile_db.assign(Tile(name="dirt wall", ch=ord("-"), bg=(0x80, 0, 0), dig_cost=100, excavated_tile="dirt floor"))
-    tile_db.assign(Tile(name="dirt floor", ch=ord("."), bg=(0x40, 0, 0), move_cost=100))
+    tile_db.assign(Tile(name="dirt floor", ch=ord("."), bg=(0x40, 0, 0), transparent=True, move_cost=100))
     tile_db.assign(
         Tile(name="rock wall", ch=ord("="), bg=(0x40, 0x40, 0x40), dig_cost=400, excavated_tile="rock floor")
     )
-    tile_db.assign(Tile(name="rock floor", ch=ord("."), bg=(0x20, 0x20, 0x20), move_cost=100))
-    tile_db.assign(Tile(name="grass", ch=ord("."), fg=(0x0, 0x80, 0x0), bg=(0x00, 0x20, 0x00), move_cost=100))
+    tile_db.assign(Tile(name="rock floor", ch=ord("."), bg=(0x20, 0x20, 0x20), transparent=True, move_cost=100))
+    tile_db.assign(
+        Tile(name="grass", ch=ord("."), fg=(0x0, 0x80, 0x0), bg=(0x00, 0x20, 0x00), transparent=True, move_cost=100)
+    )
 
     gold = registry["gold"]
     gold.components[Graphic] = Graphic(ord("$"))
