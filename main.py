@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import tcod.context
 import tcod.event
@@ -15,12 +16,14 @@ import g
 from game.states import InGame
 from game.world_init import new_world
 
+FONT = Path(__file__, "..", "assets/terminal8x12_gs_ro.png")
+
 
 def main() -> None:
     """Main entry point."""
     g.registry = new_world()
     g.state = InGame()
-    tileset = tcod.tileset.load_tilesheet("assets/terminal8x12_gs_ro.png", 16, 16, tcod.tileset.CHARMAP_CP437)
+    tileset = tcod.tileset.load_tilesheet(FONT, 16, 16, tcod.tileset.CHARMAP_CP437)
     tcod.tileset.procedural_block_elements(tileset=tileset)
     with tcod.context.new(tileset=tileset, width=1280, height=720) as g.context:
         while True:
