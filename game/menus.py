@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import g
 import game.states
 from game.menu import Menu, MenuItem
@@ -15,7 +17,7 @@ def new_game() -> State:
     return game.states.InGame()
 
 
-def main_menu(parent: State | None) -> Menu:
+def main_menu(parent: State | None) -> Menu[Callable[[], State]]:
     """Return the main menu state."""
     items = [MenuItem("New Game", new_game)]
     if parent is not None:

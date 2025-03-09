@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import TypeVar
+
 import attrs
 import tcod.console
 import tcod.constants
@@ -21,6 +24,8 @@ from game.room import RoomType
 from game.state import State  # noqa: TC001
 from game.tags import InStorage, IsPlayer
 from game.timesys import Tick
+
+T = TypeVar("T")
 
 
 @attrs.define()
@@ -102,7 +107,7 @@ class MenuState(ModalState):
     """Modal menu state."""
 
     parent: State | None
-    menu: Menu
+    menu: Menu[Callable[[], State]]
 
     def on_event(self, event: tcod.event.Event) -> State:
         """Handle menu events."""
@@ -112,7 +117,7 @@ class MenuState(ModalState):
                 self.menu.selected += y
                 self.menu.selected %= len(self.menu.items)
             case tcod.event.KeyDown(sym=KeySym.RETURN | KeySym.RETURN2 | KeySym.KP_ENTER):
-                return self.menu.items[self.menu.selected].callback()
+                return self.menu.items[self.menu.selected].value()
             case (
                 tcod.event.KeyDown(sym=KeySym.ESCAPE) | tcod.event.MouseButtonDown(button=tcod.event.MouseButton.RIGHT)
             ):

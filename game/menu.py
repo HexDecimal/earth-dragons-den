@@ -2,24 +2,25 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
+from typing import Generic, TypeVar
 
 import attrs
 
-from game.state import State  # noqa: TC001
+T = TypeVar("T")
 
 
 @attrs.define()
-class MenuItem:
+class MenuItem(Generic[T]):
     """Menu item."""
 
     label: str
-    callback: Callable[[], State]
+    value: T
 
 
 @attrs.define()
-class Menu:
+class Menu(Generic[T]):
     """Menu controller."""
 
-    items: Sequence[MenuItem]
+    items: Sequence[MenuItem[T]]
     selected: int = 0
