@@ -8,6 +8,7 @@ import tcod.ecs
 
 from game.action import Action, Impossible, Success
 from game.components import AI
+from game.tags import IsPlayer
 from game.timesys import Ticket, TurnQueue, next_ticket, schedule, unschedule
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,7 @@ def do_action(actor: tcod.ecs.Entity, action: Action) -> None:
 
 def simulate(registry: tcod.ecs.Registry) -> None:
     """Simulate the world until a player entity is active."""
+    assert registry.Q.all_of(components=[Ticket], tags=[IsPlayer])
     while True:
         ticket = next_ticket(registry)
         ai = ticket.entity.components.get(AI)

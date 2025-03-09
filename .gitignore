@@ -243,3 +243,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+## Custom
+saves/
+screenshots/
