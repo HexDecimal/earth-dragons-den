@@ -3,27 +3,30 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TypeVar
+from typing import Self, TypeVar
 
 import attrs
 import tcod.console
 import tcod.constants
+import tcod.ecs
 import tcod.event
 import tcod.sdl.video
 from tcod.event import KeySym
 
 import g
-from game.action_logic import do_action
+from game.action_logic import do_action, simulate
 from game.actions import Bump, StampRoom, idle
-from game.components import Gold
+from game.components import Gold, Location, Name
 from game.constants import DIR_KEYS, WAIT_KEYS
 from game.menu import Menu  # noqa: TC001
 from game.menus import main_menu
 from game.rendering import render_world
 from game.room import RoomType
+from game.sites import get_sites
 from game.state import State  # noqa: TC001
 from game.tags import InStorage, IsPlayer
-from game.timesys import Tick
+from game.timesys import Tick, schedule
+from game.travel import force_move
 
 T = TypeVar("T")
 
@@ -118,9 +121,7 @@ class MenuState(ModalState):
                 self.menu.selected %= len(self.menu.items)
             case tcod.event.KeyDown(sym=KeySym.RETURN | KeySym.RETURN2 | KeySym.KP_ENTER):
                 return self.menu.items[self.menu.selected].value()
-            case (
-                tcod.event.KeyDown(sym=KeySym.ESCAPE) | tcod.event.MouseButtonDown(button=tcod.event.MouseButton.RIGHT)
-            ):
+            case tcod.event.KeyDown(sym=KeySym.ESCAPE) | tcod.event.MouseButtonUp(button=tcod.event.MouseButton.RIGHT):
                 if self.parent is not None:
                     return self.parent
         return self
@@ -144,3 +145,49 @@ class MenuState(ModalState):
             menu_console.print(2, i + 1, item.label, fg=fg, bg=bg)
 
         menu_console.blit(console, console.width // 2 - width // 2, console.height // 2 - height // 2)
+
+
+@attrs.define()
+class SiteSelect(ModalState):
+    """Site selector UI."""
+
+    parent: State | None
+
+    callback: Callable[[tcod.ecs.Entity], State]
+    selected: int = 0
+
+    @classmethod
+    def new(cls, parent: State | None) -> Self:
+        """Select a site to travel."""
+        return cls(parent=parent, callback=cls._travel_callback)
+
+    @staticmethod
+    def _travel_callback(site: tcod.ecs.Entity) -> State:
+        (player,) = g.registry.Q.all_of(tags=[IsPlayer])
+        force_move(player, Location(1, 32, site))
+        schedule(player, 0)
+        simulate(g.registry)
+        return InGame()
+
+    def on_event(self, event: tcod.event.Event) -> State:
+        """Handle menu UI."""
+        match event:
+            case tcod.event.KeyDown(sym=sym) if sym in DIR_KEYS:
+                _x, y = DIR_KEYS[sym]
+            case tcod.event.KeyDown(sym=KeySym.RETURN | KeySym.RETURN2 | KeySym.KP_ENTER):
+                return self.callback(get_sites(g.registry)[self.selected])
+            case tcod.event.KeyDown(sym=KeySym.ESCAPE) | tcod.event.MouseButtonUp(button=tcod.event.MouseButton.RIGHT):
+                if self.parent is not None:
+                    return self.parent
+                return MenuState(self, main_menu(self))
+        return self
+
+    def on_render(self, console: tcod.console.Console) -> None:
+        """Render site UI."""
+        sites = get_sites(g.registry)
+        for i, site in enumerate(sites):
+            fg = (0xFF, 0xFF, 0xFF) if i == self.selected else (0x80, 0x80, 0x80)
+            bg = (0x20, 0x20, 0x20) if i == self.selected else None
+            console.print_box(
+                0, i, string=f"SITE: {site.components[Name]}", fg=fg, bg=bg, height=1, width=console.width
+            )

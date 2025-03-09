@@ -14,8 +14,10 @@ import tcod.tileset
 from tcod.event import KeySym, Modifier
 
 import g
+from game.action_logic import simulate
+from game.components import Location
 from game.saving import load_world, save_world
-from game.states import InGame
+from game.states import InGame, SiteSelect
 from game.world_init import new_world
 
 FONT = Path(__file__, "..", "assets/terminal8x12_gs_ro.png")
@@ -28,7 +30,11 @@ def main() -> None:
     except Exception:  # noqa: BLE001
         traceback.print_exc()
         g.registry = new_world()
-    g.state = InGame()
+    if g.registry.Q.all_of(components=[Location], tags=["IsPlayer"]):
+        simulate(g.registry)
+        g.state = InGame()
+    else:
+        g.state = SiteSelect.new(None)
     tileset = tcod.tileset.load_tilesheet(FONT, 16, 16, tcod.tileset.CHARMAP_CP437)
     tcod.tileset.procedural_block_elements(tileset=tileset)
     with tcod.context.new(tileset=tileset, width=1280, height=720) as g.context:

@@ -88,8 +88,15 @@ def on_position_changed(entity: tcod.ecs.Entity, old: Location | None, new: Loca
 
 
 AI: Final = ("AI", Action)
+"""AI for this entity/actor."""
 
 HP: Final = ("HP", int)
+"""Current git points."""
 MaxHP: Final = ("MaxHP", int)
+"""Maximum hit points"""
 
 Str: Final = ("Str", int)
+"""Entity strength."""
+
+Name: Final = ("Name", int)
+"""Entity name."""

@@ -8,8 +8,6 @@ from pathlib import Path
 
 import tcod.ecs
 
-from game.action_logic import simulate
-
 SAVE_DIR = Path("saves")
 SAVE_PATH = SAVE_DIR / "save.sav.xz"
 
@@ -28,5 +26,4 @@ def load_world() -> tcod.ecs.Registry:
     data = lzma.decompress(data)
     obj = pickle.loads(data)  # noqa: S301
     assert isinstance(obj, tcod.ecs.Registry)
-    simulate(obj)
     return obj

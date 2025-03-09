@@ -14,7 +14,7 @@ from game.world_init import new_world
 def new_game() -> State:
     """Start a new game."""
     g.registry = new_world()
-    return game.states.InGame()
+    return game.states.SiteSelect.new(None)
 
 
 def save_and_quit() -> State:

@@ -18,3 +18,9 @@ InStorage: Final = "InStorage"
 
 IsActor: Final = "IsActor"
 """Entity is a living character."""
+
+IsIn: Final = "IsIn"
+"""Is-in relation."""
+
+IsSite: Final = "IsSite"
+"""Entity is a site/map."""
