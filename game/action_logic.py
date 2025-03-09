@@ -42,8 +42,7 @@ def do_action(actor: tcod.ecs.Entity, action: Action) -> None:
 
 def simulate(registry: tcod.ecs.Registry) -> None:
     """Simulate the world until a player entity is active."""
-    assert registry.Q.all_of(components=[Ticket], tags=[IsPlayer])
-    while True:
+    while registry.Q.all_of(components=[Ticket], tags=[IsPlayer]):
         ticket = next_ticket(registry)
         ai = ticket.entity.components.get(AI)
         if ai is None:
