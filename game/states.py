@@ -15,11 +15,13 @@ from tcod.event import KeySym
 
 import g
 from game.action_logic import do_action, simulate
-from game.actions import Bump, StampRoom, idle
+from game.actions import Bump, HostileAI, StampRoom, idle
+from game.actor_logic import spawn_actor
 from game.components import Gold, Location, Name
-from game.constants import DIR_KEYS, WAIT_KEYS
-from game.menu import Menu  # noqa: TC001
-from game.menus import main_menu
+from game.constants import DIR_KEYS, LABEL_COLOR, LABEL_SELECTED, WAIT_KEYS
+from game.faction import Faction
+from game.menu import Menu, MenuItem
+from game.menus import main_menu, setup_menu
 from game.rendering import render_world
 from game.room import RoomType
 from game.sites import get_sites
@@ -40,6 +42,12 @@ class ModalState:
         return False
 
 
+def _cast(_: None) -> State:
+    (player,) = g.registry.Q.all_of(tags=[IsPlayer])
+    spawn_actor(player.registry["kobold"], player.components[Location], HostileAI(), Faction.Player)
+    return InGame()
+
+
 @attrs.define()
 class InGame(ModalState):
     """Player in control state."""
@@ -58,6 +66,8 @@ class InGame(ModalState):
                 return MenuState(self, main_menu(self))
             case tcod.event.KeyDown(sym=KeySym.SPACE):
                 return GodMode()
+            case tcod.event.KeyDown(sym=KeySym.z):
+                return MenuState(self, setup_menu(_cast, [MenuItem("Summon Kobold", None)]))
 
         return self
 
@@ -139,8 +149,7 @@ class MenuState(ModalState):
         menu_console.draw_frame(0, 0, width, height)
 
         for i, item in enumerate(self.menu.items):
-            fg = (0xFF, 0xFF, 0xFF) if i == self.menu.selected else (0x80, 0x80, 0x80)
-            bg = (0x20, 0x20, 0x20) if i == self.menu.selected else None
+            fg, bg = LABEL_SELECTED if i == self.menu.selected else LABEL_COLOR
 
             menu_console.print(2, i + 1, item.label, fg=fg, bg=bg)
 
@@ -186,8 +195,7 @@ class SiteSelect(ModalState):
         """Render site UI."""
         sites = get_sites(g.registry)
         for i, site in enumerate(sites):
-            fg = (0xFF, 0xFF, 0xFF) if i == self.selected else (0x80, 0x80, 0x80)
-            bg = (0x20, 0x20, 0x20) if i == self.selected else None
+            fg, bg = LABEL_SELECTED if i == self.selected else LABEL_COLOR
             console.print_box(
                 0, i, string=f"SITE: {site.components[Name]}", fg=fg, bg=bg, height=1, width=console.width
             )

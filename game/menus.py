@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 
 import g
 import game.states
@@ -30,3 +30,11 @@ def main_menu(parent: State | None) -> Menu[Callable[[], State | None]]:
     if parent is not None:
         items.insert(0, MenuItem("Continue", lambda: parent))
     return Menu(items)
+
+
+def setup_menu[T](
+    callback: Callable[[T], State | None], items: Iterable[MenuItem[T]]
+) -> Menu[Callable[[], State | None]]:
+    """Configure a menu to use a generic callback."""
+    menu = [(MenuItem(item.label, lambda item=item: callback(item.value))) for item in items]
+    return Menu(menu)  # type: ignore[arg-type]

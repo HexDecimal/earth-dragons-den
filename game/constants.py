@@ -35,3 +35,6 @@ DIR_KEYS = {
     tcod.event.KeySym.u: (1, -1),
     tcod.event.KeySym.n: (1, 1),
 }
+
+LABEL_COLOR = ((0x80, 0x80, 0x80), None)
+LABEL_SELECTED = ((0xFF, 0xFF, 0xFF), (0x40, 0x40, 0x40))
