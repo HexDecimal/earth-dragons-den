@@ -132,8 +132,15 @@ class MenuState(ModalState):
             console.rgb["fg"] //= 8
             console.rgb["bg"] //= 8
 
+        width = 30
+        height = len(self.menu.items) + 2
+        menu_console = tcod.console.Console(width, height)
+        menu_console.draw_frame(0, 0, width, height)
+
         for i, item in enumerate(self.menu.items):
             fg = (0xFF, 0xFF, 0xFF) if i == self.menu.selected else (0x80, 0x80, 0x80)
             bg = (0x20, 0x20, 0x20) if i == self.menu.selected else None
 
-            console.print(0, i, item.label, fg=fg, bg=bg)
+            menu_console.print(2, i + 1, item.label, fg=fg, bg=bg)
+
+        menu_console.blit(console, console.width // 2 - width // 2, console.height // 2 - height // 2)

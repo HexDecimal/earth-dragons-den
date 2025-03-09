@@ -17,9 +17,14 @@ def new_game() -> State:
     return game.states.InGame()
 
 
+def save_and_quit() -> State:
+    """Raise system exit."""
+    raise SystemExit
+
+
 def main_menu(parent: State | None) -> Menu[Callable[[], State]]:
     """Return the main menu state."""
-    items = [MenuItem("New Game", new_game)]
+    items = [MenuItem("New Game", new_game), MenuItem("Save and Quit", save_and_quit)]
     if parent is not None:
         items.insert(0, MenuItem("Continue", lambda: parent))
     return Menu(items)

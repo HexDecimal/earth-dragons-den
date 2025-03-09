@@ -20,6 +20,7 @@
         "argwhere",
         "astextplain",
         "autoupdate",
+        "blit",
         "docstrings",
         "getnewargs",
         "isort",
