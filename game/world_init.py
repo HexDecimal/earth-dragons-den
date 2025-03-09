@@ -11,9 +11,11 @@ from game.actions import HostileAI
 from game.actor_logic import spawn_actor
 from game.components import HP, Graphic, Location, MaxHP, Offset, Str, Vector2
 from game.faction import Faction
-from game.sites import new_site
+from game.map_gen import generate_cave_map
 from game.tags import FacetOf, IsActor, IsItem, IsPlayer
 from game.tile import Tile, TileDB
+from game.timesys import schedule
+from game.travel import force_move
 
 
 def init_world(registry: tcod.ecs.Registry) -> None:
@@ -68,7 +70,7 @@ def new_world() -> tcod.ecs.Registry:
     registry = tcod.ecs.Registry()
     init_world(registry)
 
-    map_ = new_site(registry, "cave")
+    map_ = generate_cave_map(registry)
 
     player = registry["player"]
     player.tags |= {IsPlayer, Faction.Player, IsActor}
@@ -81,6 +83,9 @@ def new_world() -> tcod.ecs.Registry:
     _3x3 = ("┌─┐", "│@│", "└─┘")
     _3x3b = ("▛▀▜", "▌@▐", "▙▄▟")
     _configure_multi_tile_entity(player, _3x3)
+
+    force_move(player, Location(1, 32, map_))
+    schedule(player, 0)
 
     for p in [Location(1, 29, map_), Location(1, 30, map_), Location(2, 29, map_), Location(2, 30, map_)]:
         spawn_actor(registry["kobold"], pos=p, ai=HostileAI(), faction=Faction.Player)

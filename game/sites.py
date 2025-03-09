@@ -5,13 +5,12 @@ from __future__ import annotations
 import tcod.ecs
 
 from game.components import Name
-from game.map_gen import generate_cave_map
 from game.tags import IsSite
 
 
 def new_site(registry: tcod.ecs.Registry, name: str) -> tcod.ecs.Entity:
     """Make a new site."""
-    site = generate_cave_map(registry)
+    site = registry[object()]
     site.tags.add(IsSite)
     site.components[Name] = name
     return site

@@ -6,6 +6,7 @@ from collections.abc import Callable
 
 import g
 import game.states
+from game.action_logic import simulate
 from game.menu import Menu, MenuItem
 from game.state import State  # noqa: TC001
 from game.world_init import new_world
@@ -14,7 +15,8 @@ from game.world_init import new_world
 def new_game() -> State:
     """Start a new game."""
     g.registry = new_world()
-    return game.states.SiteSelect.new(None)
+    simulate(g.registry)
+    return game.states.InGame()
 
 
 def save_and_quit() -> State:
