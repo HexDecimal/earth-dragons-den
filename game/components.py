@@ -88,3 +88,8 @@ def on_position_changed(entity: tcod.ecs.Entity, old: Location | None, new: Loca
 
 
 AI: Final = ("AI", Action)
+
+HP: Final = ("HP", int)
+MaxHP: Final = ("MaxHP", int)
+
+Str: Final = ("Str", int)

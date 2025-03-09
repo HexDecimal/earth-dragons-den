@@ -10,7 +10,7 @@ import tcod.ecs
 from game.action_logic import simulate
 from game.actions import HostileAI
 from game.actor_logic import spawn_actor
-from game.components import Graphic, Location, Offset, Vector2
+from game.components import HP, Graphic, Location, MaxHP, Offset, Str, Vector2
 from game.faction import Faction
 from game.map_gen import generate_cave_map
 from game.tags import FacetOf, IsActor, IsItem, IsPlayer
@@ -38,12 +38,18 @@ def init_world(registry: tcod.ecs.Registry) -> None:
 
     kobold = registry["kobold"]
     kobold.components[Graphic] = Graphic(ord("k"))
+    kobold.components[Str] = 2
+    kobold.components[MaxHP] = 4
 
     orc = registry["orc"]
     orc.components[Graphic] = Graphic(ord("o"))
+    orc.components[Str] = 3
+    orc.components[MaxHP] = 8
 
     human = registry["human"]
     human.components[Graphic] = Graphic(ord("U"))
+    human.components[Str] = 3
+    human.components[MaxHP] = 8
 
 
 def _configure_multi_tile_entity(entity: tcod.ecs.Entity, graphic: Iterable[str]) -> None:
@@ -67,6 +73,9 @@ def new_world() -> tcod.ecs.Registry:
 
     player = registry["player"]
     player.tags |= {IsPlayer, Faction.Player, IsActor}
+
+    player.components[Str] = 12
+    player.components[HP] = 100
 
     _2x2 = ("@┐", "└┘")
     _2x2b = ("@▜", "▙▟")

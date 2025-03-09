@@ -18,7 +18,7 @@ from game.combat import attack_obj
 from game.components import Gold, Location, RoomTypeLayer, Shape, TilesLayer
 from game.faction import get_enemy_factions, is_enemy
 from game.room import RoomType
-from game.tags import InStorage, IsItem
+from game.tags import InStorage, IsActor, IsItem
 from game.tile import TileDB
 from game.travel import check_move, force_move, in_bounds, iter_entity_locations
 
@@ -233,7 +233,7 @@ class HostileAI:
         """Seek and attack targets."""
         if self.sub_action:
             return self.sub_action(actor)
-        targets = actor.registry.Q.all_of(components=[Location]).any_of(tags=get_enemy_factions(actor))
+        targets = actor.registry.Q.all_of(components=[Location], tags=[IsActor]).any_of(tags=get_enemy_factions(actor))
         if not targets:
             return Impossible("no targets")
         pf = tcod.path.Pathfinder(_get_graph(actor))

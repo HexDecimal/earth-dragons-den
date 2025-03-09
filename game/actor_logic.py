@@ -7,7 +7,7 @@ from collections.abc import Iterator
 import tcod.ecs
 
 from game.action import Action  # noqa: TC001
-from game.components import AI, Location
+from game.components import AI, HP, Location, MaxHP
 from game.faction import Faction  # noqa: TC001
 from game.tags import FacetOf, IsActor
 from game.timesys import schedule
@@ -19,6 +19,7 @@ def spawn_actor(template: tcod.ecs.Entity, pos: Location, ai: Action, faction: F
     actor.components[Location] = pos
     actor.components[AI] = ai
     actor.tags |= {faction, IsActor}
+    actor.components[HP] = actor.components[MaxHP]
     schedule(actor, 0)
     return actor
 
