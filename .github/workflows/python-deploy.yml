@@ -120,4 +120,4 @@ jobs:
       - name: Upload to Itch
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: butler push dist/*/ hexdecimal/${{ env.project-name }}:${{ matrix.platform-name }}-7drl
+        run: butler push dist/*/ hexdecimal/${{ env.project-name }}:${{ matrix.platform-name }}-latest
