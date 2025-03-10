@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Self, TypeVar
+from typing import Self
 
 import attrs
 import tcod.console
@@ -29,8 +29,6 @@ from game.state import State  # noqa: TC001
 from game.tags import InStorage, IsPlayer
 from game.timesys import Tick, schedule
 from game.travel import force_move
-
-T = TypeVar("T")
 
 
 @attrs.define()

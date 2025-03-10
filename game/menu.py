@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Generic, TypeVar
 
 import attrs
 
-T = TypeVar("T")
-
 
 @attrs.define()
-class MenuItem(Generic[T]):
+class MenuItem[T]:
     """Menu item."""
 
     label: str
@@ -19,7 +16,7 @@ class MenuItem(Generic[T]):
 
 
 @attrs.define()
-class Menu(Generic[T]):
+class Menu[T]:
     """Menu controller."""
 
     items: Sequence[MenuItem[T]]
