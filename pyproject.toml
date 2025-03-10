@@ -2,13 +2,13 @@
 name = "7drl-2025"
 readme = "README.md"
 dynamic = ["version", "description"]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 
 [tool.mypy] # https://mypy.readthedocs.io/en/stable/config_file.html
 files = "."
 exclude = ['^build/', '^\.']
 explicit_package_bases = true
-python_version = "3.12"
+python_version = "3.13"
 warn_unused_configs = true
 disallow_any_generics = true
 disallow_subclassing_any = true
