@@ -19,7 +19,7 @@ import g
 from game.action_logic import simulate
 from game.components import Location
 from game.saving import load_world, save_world
-from game.states import InGame, SiteSelect
+from game.states import InGame
 from game.world_init import new_world
 
 FONT = Path(__file__, "..", "assets/terminal8x12_gs_ro.png")
@@ -36,7 +36,7 @@ def main() -> None:
         simulate(g.registry)
         g.state = InGame()
     else:
-        g.state = SiteSelect.new(None)
+        raise AssertionError
     g.tileset = tcod.tileset.load_tilesheet(FONT, 16, 16, tcod.tileset.CHARMAP_CP437)
     tcod.tileset.procedural_block_elements(tileset=g.tileset)
     with tcod.context.new(tileset=g.tileset, width=1280, height=720) as g.context:
@@ -76,7 +76,7 @@ def main_loop() -> None:
                     path = base_path / f"earth-dragons-den-{datetime.now(tz=UTC).isoformat()}.png".replace(":", "-")
                     imageio.imsave(path, g.tileset.render(console))
                 case _:
-                    g.state = g.state.on_event(event)
+                    g.state = g.state.on_event(event) or g.state
 
 
 if __name__ == "__main__":

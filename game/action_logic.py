@@ -8,13 +8,14 @@ import tcod.ecs
 
 from game.action import Action, Impossible, Success
 from game.components import AI
+from game.state import StateResult  # noqa: TC001
 from game.tags import IsPlayer
 from game.timesys import Ticket, TurnQueue, next_ticket, schedule, unschedule
 
 logger = logging.getLogger(__name__)
 
 
-def do_action(actor: tcod.ecs.Entity, action: Action) -> None:
+def do_action(actor: tcod.ecs.Entity, action: Action) -> StateResult:
     """Apply an action and its side effects."""
     ticket = next_ticket(actor.registry)
     assert ticket.entity is actor, sorted(actor.registry[None].components[TurnQueue])
@@ -38,6 +39,7 @@ def do_action(actor: tcod.ecs.Entity, action: Action) -> None:
 
     if ticket.entity.components.get(AI) is None:
         simulate(actor.registry)
+    return None
 
 
 def simulate(registry: tcod.ecs.Registry) -> None:

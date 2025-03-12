@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Self
-
 import attrs
 import tcod.console
 import tcod.constants
@@ -14,21 +11,20 @@ import tcod.sdl.video
 from tcod.event import KeySym
 
 import g
-from game.action_logic import do_action, simulate
+from game.action_logic import do_action
 from game.actions import Bump, MinionAI, StampRoom, idle
 from game.actor_logic import spawn_actor
-from game.components import Gold, Location, Name
-from game.constants import DIR_KEYS, LABEL_COLOR, LABEL_SELECTED, WAIT_KEYS
+from game.components import Gold, Location
+from game.constants import DIR_KEYS, WAIT_KEYS
 from game.faction import Faction
-from game.menu import Menu, MenuItem
-from game.menus import main_menu, setup_menu
+from game.menus import main_menu
 from game.rendering import render_world
 from game.room import RoomType
-from game.sites import get_sites
-from game.state import State  # noqa: TC001
+from game.state import State, StateResult  # noqa: TC001
 from game.tags import InStorage, IsPlayer
-from game.timesys import Tick, schedule
-from game.travel import force_move
+from game.timesys import Tick
+from game.widget import Widget, WidgetRenderInfo, WidgetSizeInfo
+from game.widgets import Button, ListMenu
 
 
 @attrs.define()
@@ -40,7 +36,7 @@ class ModalState:
         return False
 
 
-def _cast(_: None) -> State:
+def _cast() -> StateResult:
     (player,) = g.registry.Q.all_of(tags=[IsPlayer])
     spawn_actor(player.registry["kobold"], player.components[Location], MinionAI(), Faction.Player)
     return InGame()
@@ -50,22 +46,22 @@ def _cast(_: None) -> State:
 class InGame(ModalState):
     """Player in control state."""
 
-    def on_event(self, event: tcod.event.Event) -> State:
+    def on_event(self, event: tcod.event.Event) -> StateResult:  # noqa: PLR0911
         """State event handler."""
         (player,) = g.registry.Q.all_of(tags=[IsPlayer])
         match event:
             case tcod.event.KeyDown(sym=sym) if sym in DIR_KEYS:
-                do_action(player, Bump(DIR_KEYS[sym], allow_dig=True))
+                return do_action(player, Bump(DIR_KEYS[sym], allow_dig=True))
             case tcod.event.KeyDown(sym=sym) if sym in WAIT_KEYS:
-                do_action(player, idle)
+                return do_action(player, idle)
             case tcod.event.KeyDown(sym=KeySym.t):
-                do_action(player, StampRoom(RoomType.Treasury))
+                return do_action(player, StampRoom(RoomType.Treasury))
             case tcod.event.KeyDown(sym=KeySym.ESCAPE):
-                return MenuState(self, main_menu(self))
+                return UIState(self, main_menu(self))
             case tcod.event.KeyDown(sym=KeySym.SPACE):
                 return GodMode()
             case tcod.event.KeyDown(sym=KeySym.z):
-                return MenuState(self, setup_menu(_cast, [MenuItem("Summon Kobold", None)]))
+                return UIState(self, ListMenu(items=[Button("Summon Kobold", _cast)]))
 
         return self
 
@@ -91,11 +87,11 @@ class GodMode:
 
     paused: bool = False
 
-    def on_event(self, event: tcod.event.Event) -> State:
+    def on_event(self, event: tcod.event.Event) -> StateResult:
         """State event handler."""
         match event:
             case tcod.event.KeyDown(sym=KeySym.ESCAPE):
-                return MenuState(self, main_menu(self))
+                return UIState(self, main_menu(self))
             case tcod.event.KeyDown(sym=KeySym.SPACE):
                 return InGame()
         return self
@@ -114,86 +110,34 @@ class GodMode:
 
 
 @attrs.define()
-class MenuState(ModalState):
-    """Modal menu state."""
+class UIState(ModalState):
+    """Handle a UI widget or popup."""
 
     parent: State | None
-    menu: Menu[Callable[[], State | None]]
+    widget: Widget
 
-    def on_event(self, event: tcod.event.Event) -> State:
-        """Handle menu events."""
+    def on_event(self, event: tcod.event.Event) -> StateResult:
+        """Pass event to widgets."""
         match event:
-            case tcod.event.KeyDown(sym=sym) if sym in DIR_KEYS:
-                _x, y = DIR_KEYS[sym]
-                self.menu.selected += y
-                self.menu.selected %= len(self.menu.items)
-            case tcod.event.KeyDown(sym=KeySym.RETURN | KeySym.RETURN2 | KeySym.KP_ENTER):
-                return self.menu.items[self.menu.selected].value() or self
             case tcod.event.KeyDown(sym=KeySym.ESCAPE) | tcod.event.MouseButtonUp(button=tcod.event.MouseButton.RIGHT):
-                if self.parent is not None:
-                    return self.parent
-        return self
+                return self.parent
+            case _:
+                return self.widget.on_event(event)
 
     def on_render(self, console: tcod.console.Console) -> None:
-        """Render the menu."""
+        """Render widgets."""
         if g.state == self and self.parent is not None:
             self.parent.on_render(console)
             console.rgb["fg"] //= 8
             console.rgb["bg"] //= 8
 
-        width = 30
-        height = len(self.menu.items) + 2
-        menu_console = tcod.console.Console(width, height)
-        menu_console.draw_frame(0, 0, width, height)
-
-        for i, item in enumerate(self.menu.items):
-            fg, bg = LABEL_SELECTED if i == self.menu.selected else LABEL_COLOR
-
-            menu_console.print(2, i + 1, item.label, fg=fg, bg=bg)
-
-        menu_console.blit(console, console.width // 2 - width // 2, console.height // 2 - height // 2)
-
-
-@attrs.define()
-class SiteSelect(ModalState):
-    """Site selector UI."""
-
-    parent: State | None
-
-    callback: Callable[[tcod.ecs.Entity], State]
-    selected: int = 0
-
-    @classmethod
-    def new(cls, parent: State | None) -> Self:
-        """Select a site to travel."""
-        return cls(parent=parent, callback=cls._travel_callback)
-
-    @staticmethod
-    def _travel_callback(site: tcod.ecs.Entity) -> State:
-        (player,) = g.registry.Q.all_of(tags=[IsPlayer])
-        force_move(player, Location(1, 32, site))
-        schedule(player, 0)
-        simulate(g.registry)
-        return InGame()
-
-    def on_event(self, event: tcod.event.Event) -> State:
-        """Handle menu UI."""
-        match event:
-            case tcod.event.KeyDown(sym=sym) if sym in DIR_KEYS:
-                _x, y = DIR_KEYS[sym]
-            case tcod.event.KeyDown(sym=KeySym.RETURN | KeySym.RETURN2 | KeySym.KP_ENTER):
-                return self.callback(get_sites(g.registry)[self.selected])
-            case tcod.event.KeyDown(sym=KeySym.ESCAPE) | tcod.event.MouseButtonUp(button=tcod.event.MouseButton.RIGHT):
-                if self.parent is not None:
-                    return self.parent
-                return MenuState(self, main_menu(self))
-        return self
-
-    def on_render(self, console: tcod.console.Console) -> None:
-        """Render site UI."""
-        sites = get_sites(g.registry)
-        for i, site in enumerate(sites):
-            fg, bg = LABEL_SELECTED if i == self.selected else LABEL_COLOR
-            console.print_box(
-                0, i, string=f"SITE: {site.components[Name]}", fg=fg, bg=bg, height=1, width=console.width
+        width, height = self.widget.get_size(WidgetSizeInfo(max_width=console.width, max_height=console.height))
+        self.widget.render(
+            WidgetRenderInfo(
+                console=console,
+                x=console.width // 2 - width // 2,
+                y=console.height // 2 - height // 2,
+                width=width,
+                height=height,
             )
+        )

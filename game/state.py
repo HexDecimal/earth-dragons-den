@@ -11,7 +11,7 @@ import tcod.event
 class State(Protocol):
     """State protocol."""
 
-    def on_event(self, event: tcod.event.Event, /) -> State:
+    def on_event(self, event: tcod.event.Event, /) -> StateResult:
         """State event handler."""
         ...
 
@@ -22,3 +22,7 @@ class State(Protocol):
     def on_update(self) -> bool:
         """Every frame/update."""
         ...
+
+
+type StateResult = State | None
+"""Describe state changes."""

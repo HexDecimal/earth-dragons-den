@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
-
 import g
 import game.states
 from game.action_logic import simulate
-from game.menu import Menu, MenuItem
 from game.state import State  # noqa: TC001
+from game.widget import Widget  # noqa: TC001
+from game.widgets import Button, ListMenu
 from game.world_init import new_world
 
 
@@ -24,17 +23,9 @@ def save_and_quit() -> State | None:
     raise SystemExit
 
 
-def main_menu(parent: State | None) -> Menu[Callable[[], State | None]]:
+def main_menu(parent: State | None) -> Widget:
     """Return the main menu state."""
-    items = [MenuItem("New Game", new_game), MenuItem("Save and Quit", save_and_quit)]
+    items = [Button("New Game", new_game), Button("Save and Quit", save_and_quit)]
     if parent is not None:
-        items.insert(0, MenuItem("Continue", lambda: parent))
-    return Menu(items)
-
-
-def setup_menu[T](
-    callback: Callable[[T], State | None], items: Iterable[MenuItem[T]]
-) -> Menu[Callable[[], State | None]]:
-    """Configure a menu to use a generic callback."""
-    menu = [(MenuItem(item.label, lambda item=item: callback(item.value))) for item in items]
-    return Menu(menu)  # type: ignore[arg-type]
+        items.insert(0, Button("Continue", lambda: parent))
+    return ListMenu(width=30, items=items)
