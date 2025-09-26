@@ -33,7 +33,7 @@ class Button:
         """Render this widget."""
         fg, bg = LABEL_SELECTED if info.focus else LABEL_COLOR
         info.console.draw_rect(info.x, info.y, info.width, info.height, ch=0x20, fg=fg, bg=bg)
-        info.console.print_box(info.x, info.y, info.width, info.height, f" {self.label}", fg=fg)
+        info.console.print(x=info.x, y=info.y, width=info.width, height=info.height, text=f" {self.label}", fg=fg)
 
     def get_size(self, info: WidgetSizeInfo, /) -> tuple[int, int]:
         """Get the size of this widget."""

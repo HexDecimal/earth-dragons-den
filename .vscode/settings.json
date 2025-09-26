@@ -37,6 +37,7 @@
         "liskin",
         "lzma",
         "mypy",
+        "ndarray",
         "numpy",
         "pathfinding",
         "popleft",

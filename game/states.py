@@ -54,13 +54,13 @@ class InGame(ModalState):
                 return do_action(player, Bump(DIR_KEYS[sym], allow_dig=True))
             case tcod.event.KeyDown(sym=sym) if sym in WAIT_KEYS:
                 return do_action(player, idle)
-            case tcod.event.KeyDown(sym=KeySym.t):
+            case tcod.event.KeyDown(sym=KeySym.T):
                 return do_action(player, StampRoom(RoomType.Treasury))
             case tcod.event.KeyDown(sym=KeySym.ESCAPE):
                 return UIState(self, main_menu(self))
             case tcod.event.KeyDown(sym=KeySym.SPACE):
                 return GodMode()
-            case tcod.event.KeyDown(sym=KeySym.z):
+            case tcod.event.KeyDown(sym=KeySym.Z):
                 return UIState(self, ListMenu(items=[Button("Summon Kobold", _cast)]))
 
         return self

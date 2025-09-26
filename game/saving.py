@@ -6,7 +6,9 @@ import lzma
 import pickle
 from pathlib import Path
 
+import numpy as np
 import tcod.ecs
+from numpy.typing import NDArray
 
 SAVE_DIR = Path("saves")
 SAVE_PATH = SAVE_DIR / "save.sav.xz"
@@ -26,4 +28,13 @@ def load_world() -> tcod.ecs.Registry:
     data = lzma.decompress(data)
     obj = pickle.loads(data)  # noqa: S301
     assert isinstance(obj, tcod.ecs.Registry)
+
+    # Migrate old types
+    for old_component, new_component in [
+        (("TilesLayer", np.ndarray[tuple[int, ...], np.dtype[np.uint8]]), ("TilesLayer", NDArray[np.uint8])),
+        (("RoomTypeLayer", np.ndarray[tuple[int, ...], np.dtype[np.uint8]]), ("RoomTypeLayer", NDArray[np.uint8])),
+    ]:
+        for entity in list(obj.Q.all_of(components=[old_component])):
+            entity.components[new_component] = entity.components.pop(old_component)
+
     return obj

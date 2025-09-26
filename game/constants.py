@@ -26,14 +26,14 @@ DIR_KEYS = {
     tcod.event.KeySym.KP_1: (-1, 1),
     tcod.event.KeySym.KP_9: (1, -1),
     tcod.event.KeySym.KP_3: (1, 1),
-    tcod.event.KeySym.h: (-1, 0),
-    tcod.event.KeySym.l: (1, 0),
-    tcod.event.KeySym.k: (0, -1),
-    tcod.event.KeySym.j: (0, 1),
-    tcod.event.KeySym.y: (-1, -1),
-    tcod.event.KeySym.b: (-1, 1),
-    tcod.event.KeySym.u: (1, -1),
-    tcod.event.KeySym.n: (1, 1),
+    tcod.event.KeySym.H: (-1, 0),
+    tcod.event.KeySym.L: (1, 0),
+    tcod.event.KeySym.K: (0, -1),
+    tcod.event.KeySym.J: (0, 1),
+    tcod.event.KeySym.Y: (-1, -1),
+    tcod.event.KeySym.B: (-1, 1),
+    tcod.event.KeySym.U: (1, -1),
+    tcod.event.KeySym.N: (1, 1),
 }
 
 LABEL_COLOR = ((0x80, 0x80, 0x80), None)
